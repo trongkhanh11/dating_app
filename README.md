@@ -31,7 +31,7 @@ To get started with the Dating Project, follow these steps:
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/watatek/Dating_App.git
+   git clone https://github.com/trongkhanh11/dating_app.git
    cd Dating_Mobile
    ```
 
