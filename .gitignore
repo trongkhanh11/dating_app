@@ -1,0 +1,65 @@
+# Flutter/Dart specific
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+build/
+pubspec.lock
+
+# Android specific
+android/.gradle/
+android/app/build/
+android/app/**/*.iml
+android/local.properties
+
+# iOS specific
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/App.framework
+ios/Runner.xcworkspace/
+ios/Runner.xcodeproj/project.xcworkspace/
+
+# Web specific
+web/.dart_tool/
+web/build/
+web/generated_plugin_registrant.dart
+
+# macOS specific
+macos/Flutter/ephemeral/
+macos/Pods/
+macos/.symlinks/
+macos/build/
+macos/Runner.xcworkspace/
+
+# Windows specific
+windows/flutter/ephemeral/
+windows/.dart_tool/
+windows/build/
+
+# Linux specific
+linux/flutter/ephemeral/
+linux/.dart_tool/
+linux/build/
+
+# VS Code specific
+.vscode/
+
+# IntelliJ IDEA / Android Studio
+.idea/
+*.iml
+
+# Xcode specific
+xcuserdata/
+DerivedData/
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+
+# Other IDE files
+*.log
+*.swp
+*.swo
+*.swn
