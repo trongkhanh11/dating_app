@@ -1,21 +1,17 @@
+import 'package:dating_app/themes/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  static ThemeData darkTheme = ThemeData(
-    brightness: Brightness.dark,
-    primaryColor: const Color(0xFF5364e8),
-    hintColor: Colors.blueAccent,
-    textTheme: GoogleFonts.poppinsTextTheme(
-      ThemeData.dark().textTheme,
-    ),
-    inputDecorationTheme: InputDecorationTheme(
-      filled: true,
-      fillColor: Colors.white24,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: BorderSide.none,
-      ),
-    ),
+  static const colors = AppColors();
+
+  static ThemeData appTheme = ThemeData(
+    colorScheme: const ColorScheme.light(
+        primary: Color(0xFFFF5864),
+        secondary: Color(0xFFCCEEE7),
+        error: Colors.red,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onError: Colors.black,
+        brightness: Brightness.light),
   );
 }

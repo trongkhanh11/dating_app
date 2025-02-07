@@ -1,4 +1,5 @@
-import 'package:dating_app/presentation/home_screen/home_screen.dart';
+import 'package:dating_app/themes/theme.dart';
+import 'package:dating_app/widgets/bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -22,6 +23,7 @@ class MyApp extends StatelessWidget {
     final localeProvider = Provider.of<LocaleProvider>(context);
 
     return MaterialApp(
+        theme: AppTheme.appTheme,
         locale: localeProvider.locale, // Set default locale to Vietnamese
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
@@ -33,6 +35,6 @@ class MyApp extends StatelessWidget {
           Locale('vi'), // Vietnamese
         ],
         debugShowCheckedModeBanner: false,
-        home: const HomeScreen());
+        home: const BottomBar());
   }
 }
