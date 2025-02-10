@@ -7,7 +7,7 @@ class CustomTextInput extends StatelessWidget {
   final bool obscureText;
   final String? Function(String?)? validator;
 
-  const CustomTextInput({
+  const CustomTextInput({super.key, 
     required this.controller,
     required this.labelText,
     required this.icon,

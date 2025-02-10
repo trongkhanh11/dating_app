@@ -76,11 +76,6 @@ class APIService {
             endpoint,
             data: param ?? formData,
           );
-        default:
-          return dio.post(
-            endpoint,
-            data: param ?? formData,
-          );
       }
     } catch (e) {
       throw Exception('Network error');

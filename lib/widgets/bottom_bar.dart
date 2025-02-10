@@ -1,4 +1,4 @@
-import 'package:dating_app/presentation/home_screen.dart';
+import 'package:dating_app/presentation/home/home_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
