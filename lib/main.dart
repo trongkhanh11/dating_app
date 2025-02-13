@@ -1,3 +1,6 @@
+import 'package:dating_app/presentation/authentication/login/login_screen.dart';
+import 'package:dating_app/providers/auth_provider.dart';
+import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/themes/theme.dart';
 import 'package:dating_app/widgets/bottom_bar.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +13,8 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => LocaleProvider()),
+        ChangeNotifierProvider(create:  (context) => AuthProvider()),
+        ChangeNotifierProvider(create: (context) => ProfileProvider()),
       ],
       child: const MyApp(),
     ),
@@ -35,6 +40,6 @@ class MyApp extends StatelessWidget {
           Locale('vi'), // Vietnamese
         ],
         debugShowCheckedModeBanner: false,
-        home: const BottomBar());
+        home: const LoginScreen());
   }
 }
