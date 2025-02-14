@@ -1,4 +1,5 @@
 import 'package:dating_app/presentation/home_screen.dart';
+import 'package:dating_app/presentation/profile/personal_profile_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
@@ -25,7 +26,7 @@ class _BottomBarState extends State<BottomBar> {
       const HomeScreen(),
       const Text("Love List"),
       const Text("Chat"),
-      const Text("Profile"),
+      const PersonalProfileScreen(),
     ];
     return Scaffold(
       body: Center(child: widgetOptions[_selectedIndex]),
