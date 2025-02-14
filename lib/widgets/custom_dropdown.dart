@@ -1,21 +1,18 @@
 import 'package:flutter/material.dart';
 
-class CustomTextInput extends StatelessWidget {
-  final TextEditingController controller;
+class CustomDropdown extends StatelessWidget {
   final String labelText;
-  final IconData icon;
-  final bool obscureText;
-  final String? hintText;
-  final String? Function(String?)? validator;
+  //final IconData icon;
+  final List<String> items;
+  final String? value;
+  final Function(String?) onChanged;
 
-  const CustomTextInput({
-    super.key,
-    required this.controller,
+  const CustomDropdown({
     required this.labelText,
-    required this.icon,
-    this.obscureText = false,
-    this.validator,
-    this.hintText,
+    //required this.icon,
+    required this.items,
+    required this.value,
+    required this.onChanged,
   });
 
   @override
@@ -35,7 +32,7 @@ class CustomTextInput extends StatelessWidget {
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(16.0), // Updated corner radius
+            borderRadius: BorderRadius.circular(16.0),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
@@ -45,26 +42,24 @@ class CustomTextInput extends StatelessWidget {
               ),
             ],
           ),
-          child: TextFormField(
-            controller: controller,
+          child: DropdownButtonFormField<String>(
+            value: value,
             decoration: InputDecoration(
-              prefixIcon: Icon(icon, color: Colors.blueGrey),
+              //prefixIcon: Icon(icon, color: Colors.blueGrey),
               border: OutlineInputBorder(
                 borderSide: BorderSide.none,
-                borderRadius:
-                    BorderRadius.circular(16.0), // Match the corner radius
+                borderRadius: BorderRadius.circular(16.0),
               ),
               filled: true,
               fillColor: Colors.white,
-              hintText: hintText,
-              hintStyle: TextStyle(
-                color: Colors.blueGrey,
-                fontSize: 16,
-              ),
             ),
-            obscureText: obscureText,
-            validator: validator,
-            style: const TextStyle(color: Colors.blue),
+            items: items.map((String item) {
+              return DropdownMenuItem(
+                value: item,
+                child: Text(item, style: const TextStyle(color: Colors.blue)),
+              );
+            }).toList(),
+            onChanged: onChanged,
           ),
         ),
       ],

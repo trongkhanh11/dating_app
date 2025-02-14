@@ -413,21 +413,18 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           CustomActionButton(
-            tag: "nope",
             onPressed: () => controller.swipe(CardSwiperDirection.left),
             icon: FontAwesomeIcons.xmark,
             color: Colors.red,
           ),
           const SizedBox(width: 24),
           CustomActionButton(
-            tag: "super_like",
             onPressed: () => controller.swipe(CardSwiperDirection.top),
             icon: FontAwesomeIcons.solidStar,
             color: Colors.blue,
           ),
           const SizedBox(width: 24),
           CustomActionButton(
-            tag: "like",
             onPressed: () => controller.swipe(CardSwiperDirection.right),
             icon: FontAwesomeIcons.solidHeart,
             color: Colors.green,
