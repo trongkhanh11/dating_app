@@ -2,7 +2,6 @@ import 'package:dating_app/presentation/authentication/login/login_screen.dart';
 import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/themes/theme.dart';
-import 'package:dating_app/widgets/bottom_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -13,7 +12,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => LocaleProvider()),
-        ChangeNotifierProvider(create:  (context) => AuthProvider()),
+        ChangeNotifierProvider(create: (context) => AuthProvider()),
         ChangeNotifierProvider(create: (context) => ProfileProvider()),
       ],
       child: const MyApp(),

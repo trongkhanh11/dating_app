@@ -1,6 +1,5 @@
 import 'package:dating_app/presentation/profile/first_time_update_profile_screen.dart';
 import 'package:dating_app/providers/auth_provider.dart';
-import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/widgets/bottom_bar.dart';
 import 'package:dating_app/widgets/custom_text_input.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +46,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Register & Login success")),
         );
-        
+
         String? userId = authProvider.getUserId();
         if (userId != null) {
           bool hasProfile = await authProvider.checkUserProfile(userId);
@@ -61,12 +60,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
-                builder: (context) => 
-                //ChangeNotifierProvider.value(
-                  //value: Provider.of<ProfileProvider>(context, listen: false),
-                  //child: 
-                  FirstTimeUpdateProfileScreen(userId: userId),
-               // ),
+                builder: (context) =>
+                    //ChangeNotifierProvider.value(
+                    //value: Provider.of<ProfileProvider>(context, listen: false),
+                    //child:
+                    FirstTimeUpdateProfileScreen(userId: userId),
+                // ),
               ),
             );
             return;
