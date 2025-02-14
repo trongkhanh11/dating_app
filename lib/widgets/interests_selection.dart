@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 class InterestsSelection extends StatefulWidget {
@@ -137,7 +135,6 @@ class _InterestsSelectionState extends State<InterestsSelection> {
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              
               border: Border.all(
                 color: Colors.transparent,
               ),
@@ -168,7 +165,10 @@ class _InterestsSelectionState extends State<InterestsSelection> {
                           }).toList(),
                   ),
                 ),
-                Icon(Icons.arrow_forward_ios,color: Colors.grey,)
+                Icon(
+                  Icons.arrow_forward_ios,
+                  color: Colors.grey,
+                )
               ],
             ),
           ),

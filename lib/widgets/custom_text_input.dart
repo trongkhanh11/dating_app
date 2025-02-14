@@ -64,7 +64,7 @@ class CustomTextInput extends StatelessWidget {
             ),
             obscureText: obscureText,
             validator: validator,
-            style: const TextStyle(color: Colors.blue),
+            style: const TextStyle(color: Colors.blueGrey),
           ),
         ),
       ],
