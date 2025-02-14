@@ -17,7 +17,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final controller = CardSwiperController();
+  final CardSwiperController controller = CardSwiperController();
+  final ScrollController scrollController = ScrollController();
   final BaseCacheManager cacheManager = DefaultCacheManager();
 
   final List<Map<String, dynamic>> allUsers = [
@@ -28,7 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
       'photos': [
         'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg',
         'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg',
-        'https://images.pexels.com/photos/428338/pexels-photo-428338.jpeg',
+        'https://images.pexels.com/photos/428338/pexels-photo-428338.jpeg'
       ],
       'hobbies': ['Reading', 'Traveling']
     },
@@ -39,7 +40,6 @@ class _HomeScreenState extends State<HomeScreen> {
       'photos': [
         'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg',
         'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg',
-        'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg'
       ],
       'hobbies': ['Cooking', 'Dancing']
     },
@@ -67,7 +67,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Map<String, dynamic>> filteredUsers = [];
   double minAge = 18;
   double maxAge = 35;
-  double maxDistance = 10;
+  double maxDistance = 50;
 
   Map<int, int> photoIndexes = {};
 
@@ -129,6 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       photoIndexes = {};
     });
+    scrollController.jumpTo(0.0);
     return true;
   }
 
@@ -137,6 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     controller.dispose();
+    scrollController.dispose();
     cacheManager.dispose();
     super.dispose();
   }
@@ -205,6 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     }
 
                     return SingleChildScrollView(
+                      controller: scrollController,
                       child: Container(
                         margin: EdgeInsets.symmetric(horizontal: 5),
                         decoration: BoxDecoration(

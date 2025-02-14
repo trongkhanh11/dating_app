@@ -1,3 +1,4 @@
+import 'package:dating_app/presentation/authentication/login/login_screen.dart';
 import 'package:dating_app/presentation/profile/first_time_update_profile_screen.dart';
 import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/widgets/bottom_bar.dart';
@@ -87,56 +88,112 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         body: ListView(children: [
-          Container(
-            padding: EdgeInsets.all(16),
-            child: Column(
+      Container(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 30),
+              child: Text(
+                "Sign Up",
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+              ),
+            ),
+            CustomTextInput(
+              controller: firstName,
+              labelText: "First Name",
+              icon: Icons.person,
+              hintText: "Your first name",
+            ),
+            SizedBox(
+              height: 30,
+            ),
+            CustomTextInput(
+              controller: lastName,
+              labelText: "Last Name",
+              icon: Icons.person,
+              hintText: "Your last name",
+            ),
+            SizedBox(
+              height: 30,
+            ),
+            CustomTextInput(
+              controller: email,
+              labelText: "Email",
+              icon: Icons.mail,
+              hintText: "Your email",
+            ),
+            SizedBox(
+              height: 30,
+            ),
+            CustomTextInput(
+              controller: password,
+              labelText: "Password",
+              icon: Icons.lock,
+              obscureText: true,
+              hintText: "Your password",
+            ),
+            SizedBox(
+              height: 50,
+            ),
+            Consumer<AuthProvider>(
+              builder: (context, authProvider, child) {
+                return authProvider.isLoading
+                    ? CircularProgressIndicator()
+                    : Container(
+                        width: MediaQuery.of(context).size.width - 36,
+                        height: 50,
+                        decoration: const BoxDecoration(
+                            color: Colors.redAccent,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(12))),
+                        child: InkWell(
+                          onTap: () {
+                            _submitForm();
+                          },
+                          child: const Center(
+                            child: Text(
+                              "Sign Up",
+                              style: TextStyle(
+                                  fontSize: 20,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ),
+                      );
+              },
+            ),
+            SizedBox(height: 20),
+            Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CustomTextInput(
-                  controller: firstName,
-                  labelText: "First Name",
-                  icon: Icons.person,
+                Text(
+                  "Already have an account? ",
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
                 ),
-                SizedBox(
-                  height: 30,
-                ),
-                CustomTextInput(
-                  controller: lastName,
-                  labelText: "Last Name",
-                  icon: Icons.person,
-                ),
-                SizedBox(
-                  height: 30,
-                ),
-                CustomTextInput(
-                  controller: email,
-                  labelText: "Email",
-                  icon: Icons.mail,
-                ),
-                SizedBox(
-                  height: 30,
-                ),
-                CustomTextInput(
-                  controller: password,
-                  labelText: "Password",
-                  icon: Icons.lock,
-                  obscureText: true,
-                ),
-                SizedBox(
-                  height: 30,
-                ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent),
-                  onPressed: _submitForm,
-                  child: Container(
-                      padding: EdgeInsets.all(16),
-                      child: Text("Register",
-                          style: TextStyle(fontSize: 20, color: Colors.white))),
-                ),
+                InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LoginScreen()),
+                    );
+                  },
+                  child: const Text(
+                    "Login",
+                    style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold),
+                  ),
+                )
               ],
             ),
-          ),
-        ]));
+          ],
+        ),
+      ),
+    ]));
   }
 }

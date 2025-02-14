@@ -170,7 +170,7 @@ class _LoginViewState extends State<LoginScreen> {
                     child: const Text(
                       "Create Here",
                       style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 16,
                           color: Colors.black,
                           fontWeight: FontWeight.bold),
                     ),
