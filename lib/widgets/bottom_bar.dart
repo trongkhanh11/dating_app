@@ -1,4 +1,5 @@
 import 'package:dating_app/presentation/home/home_screen.dart';
+import 'package:dating_app/themes/theme.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
@@ -28,6 +29,7 @@ class _BottomBarState extends State<BottomBar> {
       const Text("Profile"),
     ];
     return Scaffold(
+      backgroundColor: AppTheme.colors.bgColor,
       body: Center(child: widgetOptions[_selectedIndex]),
       bottomNavigationBar: BottomNavigationBar(
           currentIndex: _selectedIndex,

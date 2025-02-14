@@ -1,16 +1,33 @@
 import 'package:flutter/material.dart';
 
 class FilterScreen extends StatefulWidget {
-  const FilterScreen({super.key});
+  final double minAge;
+  final double maxAge;
+  final double distance;
+
+  const FilterScreen({
+    super.key,
+    required this.minAge,
+    required this.maxAge,
+    required this.distance,
+  });
 
   @override
   State<FilterScreen> createState() => _FilterScreenState();
 }
 
 class _FilterScreenState extends State<FilterScreen> {
-  double _minAge = 18;
-  double _maxAge = 35;
-  double _distance = 10;
+  late double _minAge;
+  late double _maxAge;
+  late double _distance;
+
+  @override
+  void initState() {
+    super.initState();
+    _minAge = widget.minAge;
+    _maxAge = widget.maxAge;
+    _distance = widget.distance;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +48,7 @@ class _FilterScreenState extends State<FilterScreen> {
             ),
           ),
           const SizedBox(height: 20),
-          Text(
+          const Text(
             "Filter",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
@@ -66,13 +83,17 @@ class _FilterScreenState extends State<FilterScreen> {
           const SizedBox(height: 20),
           ElevatedButton(
             onPressed: () {
-              Navigator.pop(context);
+              Navigator.pop(context, {
+                'minAge': _minAge,
+                'maxAge': _maxAge,
+                'distance': _distance,
+              });
             },
             style: ElevatedButton.styleFrom(
-              minimumSize: Size(double.infinity, 50),
+              minimumSize: const Size(double.infinity, 50),
               backgroundColor: Theme.of(context).colorScheme.primary,
             ),
-            child: Text(
+            child: const Text(
               "Apply",
               style: TextStyle(color: Colors.white, fontSize: 18),
             ),
