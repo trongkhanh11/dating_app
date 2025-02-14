@@ -12,9 +12,9 @@ class APIService {
 
   String get baseUrl {
     if (kDebugMode) {
-      return 'https://clients.ssi-crm.com/api';
+      return 'http://192.168.100.124:3000';
     }
-    return 'https://clients.ssi-crm.com/api';
+    return 'http://192.168.100.124:3000';
   }
 
   Future<Response> request(String endpoint, DioMethod method,

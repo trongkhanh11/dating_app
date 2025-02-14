@@ -141,6 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   FloatingActionButton(
+                    heroTag: 'dislike',
                     onPressed: () => controller.swipe(CardSwiperDirection.left),
                     backgroundColor: Colors.white,
                     shape: const CircleBorder(),
@@ -152,6 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(width: 24),
                   FloatingActionButton(
+                    heroTag: "super_like",
                     onPressed: () => controller.swipe(CardSwiperDirection.top),
                     backgroundColor: Colors.white,
                     shape: const CircleBorder(),
@@ -162,6 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(width: 24),
                   FloatingActionButton(
+                    heroTag: "like",
                     onPressed: () =>
                         controller.swipe(CardSwiperDirection.right),
                     backgroundColor: Colors.white,
