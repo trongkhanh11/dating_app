@@ -79,8 +79,8 @@ class _FirstTimeUpdateProfileScreenState
     "Toyama",
     "Gifu"
   ];
-  List<String> genderOptions = ["male", "female", "Other"];
-  List<String> typeOption = ["male", "female", "Both"];
+  List<String> genderOptions = ["Male", "Female", "Other"];
+  List<String> typeOption = ["Male", "Female", "Both"];
   void _nextStep() {
     // if(_currentStep == 1 ){
     //   _validateAge(ageController.text);

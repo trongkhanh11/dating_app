@@ -1,3 +1,4 @@
+import 'package:dating_app/presentation/profile/personal_profile_screen.dart';
 import 'package:dating_app/presentation/home/home_screen.dart';
 import 'package:dating_app/themes/theme.dart';
 import 'package:flutter/cupertino.dart';
@@ -26,7 +27,7 @@ class _BottomBarState extends State<BottomBar> {
       const HomeScreen(),
       const Text("Love List"),
       const Text("Chat"),
-      const Text("Profile"),
+      const PersonalProfileScreen(),
     ];
     return Scaffold(
       backgroundColor: AppTheme.colors.bgColor,
