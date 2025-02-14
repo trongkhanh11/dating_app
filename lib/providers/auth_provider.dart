@@ -12,6 +12,9 @@ class AuthProvider with ChangeNotifier {
   String? _userId;
   Future<bool> login(String email, String password) async {
     try {
+      isLoading = true;
+      notifyListeners();
+
       final response = await APIService.instance.request(
           '/api/v1/auth/email/login', // enter the endpoint for required API call
           DioMethod.post,
@@ -27,15 +30,18 @@ class AuthProvider with ChangeNotifier {
         await prefs.setString('token', token);
         final data = response.data;
         _userId = data['user']?['id'];
+        isLoading = false;
         notifyListeners();
         return true;
       } else {
         debugPrint('API call failed: ${response.statusMessage}');
+        isLoading = false;
         notifyListeners();
         return false;
       }
     } catch (e) {
       debugPrint('Network error occurred: $e');
+      isLoading = false;
       notifyListeners();
       return false;
     }
@@ -57,7 +63,6 @@ class AuthProvider with ChangeNotifier {
           token: '');
 
       if (response.statusCode == 201) {
-        // Kiểm tra nếu response.data có chứa userId
         if (response.data['data'] == null ||
             response.data['data']['userId'] == null) {
           debugPrint("Error: API response does not contain userId");
@@ -84,7 +89,7 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> checkUserProfile(String userId) async{
+  Future<bool> checkUserProfile(String userId) async {
     try {
       final response = await APIService.instance.request(
           '/api/v1/profiles/user/$userId', // enter the endpoint for required API call
@@ -93,7 +98,6 @@ class AuthProvider with ChangeNotifier {
           token: _usertoken);
 
       if (response.statusCode == 200) {
-        
         return true;
       } else {
         debugPrint('API call failed: ${response.statusMessage}');

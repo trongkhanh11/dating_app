@@ -1,10 +1,7 @@
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/widgets/bottom_bar.dart';
-import 'package:dating_app/widgets/custom_dropdown.dart';
-import 'package:dating_app/widgets/custom_text_input.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class FirstTimeUpdateProfileScreen extends StatefulWidget {
   final String userId;
@@ -116,16 +113,16 @@ class _FirstTimeUpdateProfileScreenState
     }
   }
 
-  void _validateAge(String value) {
-    setState(() {
-      int? age = int.tryParse(ageController.text);
-      if (age == null || age < 18) {
-        ageErrorMessage = "You must be at least 18 years old";
-      } else {
-        ageErrorMessage = null;
-      }
-    });
-  }
+  // void _validateAge(String value) {
+  //   setState(() {
+  //     int? age = int.tryParse(ageController.text);
+  //     if (age == null || age < 18) {
+  //       ageErrorMessage = "You must be at least 18 years old";
+  //     } else {
+  //       ageErrorMessage = null;
+  //     }
+  //   });
+  // }
 
   void _submitForm() async {
     final profileProvider =

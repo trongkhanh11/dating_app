@@ -12,7 +12,7 @@ class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
   @override
-  _LoginViewState createState() => _LoginViewState();
+  State<LoginScreen> createState() => _LoginViewState();
 }
 
 class _LoginViewState extends State<LoginScreen> {
@@ -20,8 +20,6 @@ class _LoginViewState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   // bool _isLoading = false;
   // bool _isRememberMeChecked = false;
-
-  bool showProgressBar = false;
 
   // void _clearEmail() {
   //   _emailController.clear();
@@ -32,8 +30,6 @@ class _LoginViewState extends State<LoginScreen> {
   // }
 
   void _login() async {
-    // Xử lý gửi form (API, Database, etc.)
-
     if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please fill all fields")),
@@ -58,7 +54,8 @@ class _LoginViewState extends State<LoginScreen> {
           Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) => FirstTimeUpdateProfileScreen(userId:userId)),
+                builder: (context) =>
+                    FirstTimeUpdateProfileScreen(userId: userId)),
           );
         }
       }
@@ -67,13 +64,6 @@ class _LoginViewState extends State<LoginScreen> {
         const SnackBar(content: Text("Login failed")),
       );
     }
-    setState(() {
-      showProgressBar = true;
-    });
-    await Future.delayed(Duration(seconds: 2));
-    setState(() {
-      showProgressBar = false;
-    });
   }
 
   @override
@@ -107,9 +97,11 @@ class _LoginViewState extends State<LoginScreen> {
               SizedBox(
                 width: MediaQuery.of(context).size.width - 36,
                 child: CustomTextInput(
-                    controller: _emailController,
-                    labelText: "Email",
-                    icon: Icons.email),
+                  controller: _emailController,
+                  labelText: "Email",
+                  icon: Icons.email,
+                  hintText: "Your email",
+                ),
               ),
               const SizedBox(
                 height: 20,
@@ -117,35 +109,43 @@ class _LoginViewState extends State<LoginScreen> {
               SizedBox(
                 width: MediaQuery.of(context).size.width - 36,
                 child: CustomTextInput(
-                    controller: _passwordController,
-                    labelText: "Password",
-                    icon: Icons.lock,
-                    obscureText: true),
+                  controller: _passwordController,
+                  labelText: "Password",
+                  icon: Icons.lock,
+                  hintText: "Your password",
+                  obscureText: true,
+                ),
               ),
               const SizedBox(
                 height: 50,
               ),
-              Container(
-                width: MediaQuery.of(context).size.width - 36,
-                height: 50,
-                decoration: const BoxDecoration(
-                    color: Colors.redAccent,
-                    borderRadius: BorderRadius.all(Radius.circular(12))),
-                child: InkWell(
-                  onTap: () {
-                    //Login logic here
-                    _login();
-                  },
-                  child: const Center(
-                    child: Text(
-                      "Login",
-                      style: TextStyle(
-                          fontSize: 20,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
+              Consumer<AuthProvider>(
+                builder: (context, authProvider, child) {
+                  return authProvider.isLoading
+                      ? CircularProgressIndicator()
+                      : Container(
+                          width: MediaQuery.of(context).size.width - 36,
+                          height: 50,
+                          decoration: const BoxDecoration(
+                              color: Colors.redAccent,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(12))),
+                          child: InkWell(
+                            onTap: () {
+                              _login();
+                            },
+                            child: const Center(
+                              child: Text(
+                                "Login",
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ),
+                        );
+                },
               ),
               const SizedBox(
                 height: 20,
@@ -177,13 +177,6 @@ class _LoginViewState extends State<LoginScreen> {
                   )
                 ],
               ),
-              const SizedBox(
-                height: 16,
-              ),
-              showProgressBar == true
-                  ? CircularProgressIndicator(
-                      valueColor: AlwaysStoppedAnimation(Colors.pink))
-                  : Container(),
               const SizedBox(
                 height: 16,
               ),
