@@ -1,4 +1,5 @@
 import 'package:dating_app/models/profile_model.dart';
+import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/widgets/bottom_bar.dart';
 import 'package:flutter/material.dart';
@@ -28,9 +29,10 @@ class _FirstTimeUpdateProfileScreenState
 
   bool isPublic = true;
   String? selectedGender;
-  String? selectedType;
+  String? selectedOrientation;
   String? selectedCity;
   String? ageErrorMessage;
+  List<String>? selectedLookingFor = [];
   List<String> interests = [];
   final List<String> interestOptions = [
     "Sports",
@@ -47,49 +49,44 @@ class _FirstTimeUpdateProfileScreenState
     "Smoke"
   ];
   final List<String> cities = [
-    "Tokyo",
-    "Yokohama",
-    "Osaka",
-    "Nagoya",
-    "Sapporo",
-    "Fukuoka",
-    "Kobe",
-    "Kyoto",
-    "Kawasaki",
-    "Saitama",
-    "Hiroshima",
-    "Sendai",
-    "Chiba",
-    "Niigata",
-    "Hamamatsu",
-    "Shizuoka",
-    "Okayama",
-    "Sagamihara",
-    "Kumamoto",
-    "Kagoshima",
-    "Funabashi",
-    "Hachioji",
-    "Utsunomiya",
-    "Matsuyama",
-    "Nagasaki",
-    "Oita",
-    "Kanazawa",
-    "Naha",
-    "Akita",
-    "Fukushima",
-    "Toyama",
-    "Gifu"
+    "Hanoi",
+    "Ho Chi Minh City",
+    "Da Nang",
+    "Hai Phong",
+    "Nha Trang",
+    "Can Tho",
+    "Hue",
+    "Vung Tau"
   ];
-  List<String> genderOptions = ["male", "female", "other"];
-  List<String> typeOption = ["male", "female", "both"];
+  List<Map<String, String>> genderOptions = [
+    {"label": "Male", "value": "male"},
+    {"label": "Female", "value": "female"},
+    {"label": "Other", "value": "other"},
+  ];
+
+  List<Map<String, String>> orientationOptions = [
+    {"label": "Straight", "value": "straight"},
+    {"label": "Gay", "value": "gay"},
+    {"label": "Lesbian", "value": "lesbian"},
+    {"label": "Bisexual", "value": "bisexual"},
+    {"label": "Pansexual", "value": "pansexual"},
+    {"label": "Asexual", "value": "asexual"},
+    {"label": "Queer", "value": "queer"},
+    {"label": "Questioning", "value": "questioning"},
+    {"label": "Other", "value": "other"},
+  ];
+
+  List<Map<String, String>> relationshipPreferences = [
+    {"label": "Lover", "value": "lover"},
+    {"label": "Long-term Relationship", "value": "long_term"},
+    {"label": "Anything is possible", "value": "any"},
+    {"label": "Open Relationship", "value": "open"},
+    {"label": "New friends", "value": "friends"},
+    {"label": "I'm not so sure", "value": "other"},
+  ];
+
   void _nextStep() {
-    // if(_currentStep == 1 ){
-    //   _validateAge(ageController.text);
-    //   if(ageErrorMessage != null){
-    //     return;
-    //   }
-    // }
-    if (_currentStep < 7) {
+    if (_currentStep < 8) {
       setState(() {
         _currentStep++;
       });
@@ -114,17 +111,6 @@ class _FirstTimeUpdateProfileScreenState
     }
   }
 
-  // void _validateAge(String value) {
-  //   setState(() {
-  //     int? age = int.tryParse(ageController.text);
-  //     if (age == null || age < 18) {
-  //       ageErrorMessage = "You must be at least 18 years old";
-  //     } else {
-  //       ageErrorMessage = null;
-  //     }
-  //   });
-  // }
-
   void _submitForm() async {
     final profileProvider =
         Provider.of<ProfileProvider>(context, listen: false);
@@ -134,7 +120,7 @@ class _FirstTimeUpdateProfileScreenState
       isPublic: isPublic,
       age: int.tryParse(ageController.text) ?? 18,
       gender: selectedGender ?? "Other",
-      sexualOrientation: selectedType ?? "Both",
+      sexualOrientation: selectedOrientation ?? "Both",
       bio: bioController.text,
       interests: interests,
       location: selectedCity ?? "Unknown",
@@ -162,7 +148,7 @@ class _FirstTimeUpdateProfileScreenState
       appBar: AppBar(title: Text("")),
       body: Column(
         children: [
-          LinearProgressIndicator(value: (_currentStep + 1) / 5),
+          LinearProgressIndicator(value: (_currentStep + 1) / 8),
           Expanded(
             child: PageView(
                 controller: _pageController,
@@ -171,7 +157,8 @@ class _FirstTimeUpdateProfileScreenState
                   _buildStepNickname(),
                   _buildStepAge(),
                   _buildStepGender(),
-                  _buildStepType(),
+                  _buildStepOrientation(),
+                  _buildStepLookingFor(),
                   _buildStepBio(),
                   _buildStepInterested(),
                   _buildStepLocation(),
@@ -260,28 +247,28 @@ class _FirstTimeUpdateProfileScreenState
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: SizedBox(
-                width: double.infinity, // Chiếm toàn bộ chiều rộng
-                height: 60, // Độ cao cố định của từng nút
+                width: double.infinity,
+                height: 60,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: selectedGender == gender
+                    backgroundColor: selectedGender == gender["value"]
                         ? Colors.redAccent
-                        : Colors.grey[200], // Màu khi chọn hoặc chưa chọn
+                        : Colors.grey[200],
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10), // Bo góc
+                      borderRadius: BorderRadius.circular(10),
                     ),
                   ),
                   onPressed: () {
                     setState(() {
-                      selectedGender = gender;
+                      selectedGender = gender["value"];
                     });
                   },
                   child: Text(
-                    gender,
+                    gender["label"]!,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: selectedGender == gender
+                      color: selectedGender == gender["value"]
                           ? Colors.white
                           : Colors.black,
                     ),
@@ -290,15 +277,6 @@ class _FirstTimeUpdateProfileScreenState
               ),
             );
           }),
-          if (selectedGender == null)
-            Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: Text(
-                "Please select a gender",
-                style: TextStyle(color: Colors.red),
-                textAlign: TextAlign.center,
-              ),
-            ),
         ],
       ),
     );
@@ -326,54 +304,92 @@ class _FirstTimeUpdateProfileScreenState
         ));
   }
 
-  Widget _buildStepType() {
+  Widget _buildStepOrientation() {
     return _buildFormStep(
-      title: "What Are You Looking For?",
-      content: Column(
-        children: [
-          ...typeOption.map((gender) {
-            return Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              child: SizedBox(
-                width: double.infinity, // Chiếm toàn bộ chiều rộng
-                height: 60, // Độ cao cố định của từng nút
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: selectedType == gender
-                        ? Colors.redAccent
-                        : Colors.grey[200], // Màu khi chọn hoặc chưa chọn
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10), // Bo góc
+      title: "What is your sexual orientation?",
+      content: Expanded(
+        child: ListView.builder(
+          itemCount: orientationOptions.length,
+          itemBuilder: (context, index) {
+            final option = orientationOptions[index];
+            final isSelected = selectedOrientation == option["value"];
+            return ListTile(
+              title: Text(option["label"]!),
+              trailing: isSelected
+                  ? Icon(Icons.check, color: Colors.redAccent)
+                  : null,
+              onTap: () {
+                setState(() {
+                  selectedOrientation = option["value"];
+                });
+              },
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStepLookingFor() {
+    return _buildFormStep(
+      title: "What are you looking for in a relationship?",
+      content: SizedBox(
+        height: 300, // Giới hạn chiều cao để tránh tràn màn hình
+        child: GridView.builder(
+          shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3, // Hiển thị 3 cột
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+          ),
+          itemCount: relationshipPreferences.length,
+          itemBuilder: (context, index) {
+            final preference = relationshipPreferences[index];
+            bool isSelected =
+                selectedLookingFor!.contains(preference["value"]!);
+
+            return GestureDetector(
+              onTap: () {
+                setState(() {
+                  selectedLookingFor!.clear();
+                  selectedLookingFor!.add(preference["value"]!);
+                });
+              },
+              child: Container(
+                width: 100, // Đặt kích thước cố định
+                height: 80, // Đặt kích thước cố định
+                alignment: Alignment.center,
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.white : Colors.grey[100],
+                  borderRadius: BorderRadius.circular(10),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2), // Màu bóng mờ
+                      spreadRadius: 0,
+                      blurRadius: 5,
+                      offset: Offset(0, 3), // Đổ bóng xuống dưới
                     ),
+                  ],
+                  border: Border.all(
+                    color: isSelected ? Colors.redAccent : Colors.transparent,
+                    width: 2,
                   ),
-                  onPressed: () {
-                    setState(() {
-                      selectedType = gender;
-                    });
-                  },
-                  child: Text(
-                    gender,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color:
-                          selectedType == gender ? Colors.white : Colors.black,
-                    ),
+                ),
+                child: Text(
+                  preference["label"]!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
                 ),
               ),
             );
-          }),
-          if (selectedType == null)
-            Padding(
-              padding: const EdgeInsets.only(top: 10),
-              child: Text(
-                "Please select a type of person you are interested in",
-                style: TextStyle(color: Colors.red),
-                textAlign: TextAlign.center,
-              ),
-            ),
-        ],
+          },
+        ),
       ),
     );
   }
@@ -514,9 +530,15 @@ class _FirstTimeUpdateProfileScreenState
                 style:
                     ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
                 onPressed: _nextStep,
-                child: Text(_currentStep == 7 ? "Submit" : "Next",
-                    style: TextStyle(color: Colors.white)),
-              ),
+                child: Consumer<AuthProvider>(
+                  builder: (context, authProvider, child) {
+                    return authProvider.isLoading
+                        ? CircularProgressIndicator()
+                        : Text(_currentStep == 8 ? "Done" : "Next",
+                            style: TextStyle(color: Colors.white));
+                  },
+                ),
+              )
             ],
           ),
         ],

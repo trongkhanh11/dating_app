@@ -61,8 +61,6 @@ class ProfileProvider with ChangeNotifier {
           contentType: 'application/json',
           token: token);
 
-      print(response.data);
-
       if (response.statusCode == 200) {
         _profile = Profile.fromJson(response.data);
         notifyListeners();
