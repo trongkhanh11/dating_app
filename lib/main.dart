@@ -1,4 +1,5 @@
 import 'package:dating_app/presentation/authentication/login/login_screen.dart';
+import 'package:dating_app/presentation/profile/personal_profile_screen.dart';
 import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/themes/theme.dart';

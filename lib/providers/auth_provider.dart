@@ -10,6 +10,7 @@ class AuthProvider with ChangeNotifier {
   bool isLoading = false;
   bool hasError = false;
   String? _userId;
+ // String? userId;
   Future<bool> login(String email, String password) async {
     try {
       isLoading = true;
@@ -30,6 +31,7 @@ class AuthProvider with ChangeNotifier {
         await prefs.setString('token', token);
         final data = response.data;
         _userId = data['user']?['id'];
+        await prefs.setString('userId', _userId!);
         isLoading = false;
         notifyListeners();
         return true;

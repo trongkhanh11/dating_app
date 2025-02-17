@@ -50,12 +50,12 @@ class ProfileProvider with ChangeNotifier {
             "isPublic": isPublic,
             "age": age,
             "gender": gender,
-            "sexualOrientation": sexualOrientation,
+            "sexualOrientation": 'male',
             "bio": bio,
             "location": location,
             "latitude": latitude,
             "longitude": longitude,
-            "interests": interests,
+            // "interests": interests,
           },
           contentType: 'application/json',
           token: _usertoken);
@@ -76,13 +76,79 @@ class ProfileProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> createProfilePreferences({
+    required String userId,
+    List<String>? hobbies,
+    List<String>? lookingFor,
+    List<String>? languages,
+    List<String>? zodiacSigns,
+    List<String>? education,
+    List<String>? futureFamily,
+    List<String>? personalityTypes,
+    List<String>? communicationStyles,
+    List<String>? petPreferences,
+    List<String>? drinking,
+    List<String>? smoking,
+    List<String>? exercise,
+    List<String>? diet,
+    List<String>? socialMedia,
+    List<String>? sleepHabits,
+  }) async {
+    isLoading = true;
+    notifyListeners();
+
+    try {
+      final response = await APIService.instance.request(
+        '/api/v1/users/preferences', // Đặt đúng endpoint của API
+        DioMethod.post,
+        param: {
+          "userId": userId,
+          "hobbies": hobbies,
+          "lookingFor": lookingFor,
+          "languages": languages,
+          "zodiacSigns": zodiacSigns,
+          "education": education,
+          "futureFamily": futureFamily,
+          "personalityTypes": personalityTypes,
+          "communicationStyles": communicationStyles,
+          "petPreferences": petPreferences,
+          "drinking": drinking,
+          "smoking": smoking,
+          "exercise": exercise,
+          "diet": diet,
+          "socialMedia": socialMedia,
+          "sleepHabits": sleepHabits,
+        },
+        contentType: 'application/json',
+        token: _usertoken,
+      );
+
+      if (response.statusCode == 201) {
+        debugPrint('Profile preferences created successfully');
+        isLoading = false;
+        notifyListeners();
+        return true;
+      } else {
+        debugPrint('API call failed: ${response.statusMessage}');
+        isLoading = false;
+        notifyListeners();
+        return false;
+      }
+    } catch (e) {
+      debugPrint('Network error occurred: $e');
+      isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<bool> getProfileByUserId(String userId) async {
     isLoading = true;
     notifyListeners();
 
     try {
       final response = await APIService.instance.request(
-        '/api/v1/profiles/$userId', // Endpoint để lấy profile
+        '/api/v1/profiles/user/$userId', // Endpoint để lấy profile
         DioMethod.get,
         token: _usertoken,
       );
@@ -97,8 +163,8 @@ class ProfileProvider with ChangeNotifier {
         sexualOrientation = data['sexualOrientation'];
         bio = data['bio'];
         location = data['location'];
-        latitude = data['latitude'];
-        longitude = data['longitude'];
+        //    latitude = data['latitude'];
+        //     longitude = data['longitude'];
         avatarUrl = data['avatarUrl'];
         interests = List<String>.from(data['interests'] ?? []);
 
