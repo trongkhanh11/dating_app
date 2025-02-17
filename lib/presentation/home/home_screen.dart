@@ -161,6 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ),
+        automaticallyImplyLeading: false,
         actions: [
           IconButton(
             icon: const Icon(CupertinoIcons.slider_horizontal_3,

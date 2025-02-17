@@ -1,3 +1,4 @@
+import 'package:dating_app/models/profile_model.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/widgets/bottom_bar.dart';
 import 'package:flutter/material.dart';
@@ -127,24 +128,28 @@ class _FirstTimeUpdateProfileScreenState
   void _submitForm() async {
     final profileProvider =
         Provider.of<ProfileProvider>(context, listen: false);
-    await profileProvider.loadToken();
-    bool success = await profileProvider.createProfile(
-        widget.userId,
-        displayNameController.text,
-        isPublic,
-        int.tryParse(ageController.text) ?? 18,
-        selectedGender ?? "Other",
-        selectedType ?? "Both",
-        bioController.text,
-        interests,
-        selectedCity ?? "Unknown",
-        10.810370781525451,
-        106.66743096751458);
+    CreateProfileModel createProfileModel = CreateProfileModel(
+      userId: widget.userId,
+      displayName: displayNameController.text,
+      isPublic: isPublic,
+      age: int.tryParse(ageController.text) ?? 18,
+      gender: selectedGender ?? "Other",
+      sexualOrientation: selectedType ?? "Both",
+      bio: bioController.text,
+      interests: interests,
+      location: selectedCity ?? "Unknown",
+      longitude: 10.810370781525451,
+      latitude: 106.66743096751458,
+    );
+
+    bool success =
+        await profileProvider.createProfile(createProfileModel, context);
     if (success) {
       debugPrint("User profile created successfully!");
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => BottomBar()),
+        MaterialPageRoute(
+            builder: (context) => BottomBar(profile: profileProvider.profile)),
       );
     } else {
       debugPrint("Failed to create profile");

@@ -3,7 +3,7 @@ import 'package:curl_logger_dio_interceptor/curl_logger_dio_interceptor.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
-enum DioMethod { post, get, put, delete }
+enum DioMethod { post, get, put, patch, delete }
 
 class APIService {
   APIService._singleton();
@@ -12,9 +12,9 @@ class APIService {
 
   String get baseUrl {
     if (kDebugMode) {
-      return 'http://192.168.100.124:3000';
+      return 'http://192.168.100.124:3000/api/v1/';
     }
-    return 'http://192.168.100.124:3000';
+    return 'http://192.168.100.124:3000/api/v1/';
   }
 
   Future<Response> request(String endpoint, DioMethod method,
@@ -51,26 +51,18 @@ class APIService {
             queryParameters: param,
           );
         case DioMethod.put:
-          if (isUpload == true) {
-            return dio.post(
-              options: Options(
-                headers: {
-                  "Content-Type": "multipart/form-data",
-                },
-              ),
-              endpoint,
-              data: param ?? formData,
-            );
-          } else {
-            return dio.post(
-              options: Options(
-                responseType: ResponseType.bytes,
-              ),
-              endpoint,
-              data: param ?? formData,
-            );
-          }
-
+          return dio.put(
+            options: Options(
+              responseType: ResponseType.json,
+            ),
+            endpoint,
+            data: param ?? formData,
+          );
+        case DioMethod.patch:
+          return dio.patch(
+            endpoint,
+            data: param ?? formData,
+          );
         case DioMethod.delete:
           return dio.delete(
             endpoint,

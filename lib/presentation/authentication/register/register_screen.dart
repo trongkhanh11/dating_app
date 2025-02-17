@@ -1,6 +1,8 @@
+import 'package:dating_app/models/user_model.dart';
 import 'package:dating_app/presentation/authentication/login/login_screen.dart';
 import 'package:dating_app/presentation/profile/first_time_update_profile_screen.dart';
 import 'package:dating_app/providers/auth_provider.dart';
+import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/widgets/bottom_bar.dart';
 import 'package:dating_app/widgets/custom_text_input.dart';
 import 'package:flutter/material.dart';
@@ -14,73 +16,52 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  // Biến lưu trữ dữ liệu form
-  final TextEditingController firstName = TextEditingController();
-  final TextEditingController email = TextEditingController();
-  final TextEditingController lastName = TextEditingController();
-  final TextEditingController password = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
 
   void _submitForm() async {
-    // Xử lý gửi form (API, Database, etc.)
-
-    if (email.text.isEmpty ||
-        password.text.isEmpty ||
-        firstName.text.isEmpty ||
-        lastName.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields")),
-      );
-      return;
-    }
-
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-    bool success = await authProvider.register(
-        email.text, password.text, firstName.text, lastName.text);
+    RegisterModel registerModel = RegisterModel(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+      firstName: _firstNameController.text.trim(),
+      lastName: _lastNameController.text.trim(),
+    );
+
+    bool success = await authProvider.register(registerModel, context);
 
     if (success) {
-      // ScaffoldMessenger.of(context).showSnackBar(
-      //   const SnackBar(content: Text("Register success")),
-      // );
-      bool loginSuccess = await authProvider.login(email.text, password.text);
-      if (loginSuccess) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Register & Login success")),
-        );
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      bool loginSuccess = await authProvider.login(
+          _emailController.text.trim(), _passwordController.text);
 
-        String? userId = authProvider.getUserId();
-        if (userId != null) {
-          bool hasProfile = await authProvider.checkUserProfile(userId);
-          if (hasProfile) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => BottomBar()),
-            );
-            return;
-          } else {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    //ChangeNotifierProvider.value(
-                    //value: Provider.of<ProfileProvider>(context, listen: false),
-                    //child:
-                    FirstTimeUpdateProfileScreen(userId: userId),
-                // ),
+      if (loginSuccess) {
+        final userId = authProvider.userModel?.user.id ?? "";
+        final profileProvider =
+            Provider.of<ProfileProvider>(context, listen: false);
+        bool hasProfile = await profileProvider.getUserProfile(userId, context);
+        if (hasProfile) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => BottomBar(
+                profile: authProvider.profile,
               ),
-            );
-            return;
-          }
+            ),
+          );
+          return;
+        } else {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    FirstTimeUpdateProfileScreen(userId: userId)),
+          );
         }
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Login failed")),
-        );
       }
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Register failed")),
-      );
     }
   }
 
@@ -101,7 +82,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
             CustomTextInput(
-              controller: firstName,
+              controller: _firstNameController,
               labelText: "First Name",
               icon: Icons.person,
               hintText: "Your first name",
@@ -110,7 +91,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               height: 30,
             ),
             CustomTextInput(
-              controller: lastName,
+              controller: _lastNameController,
               labelText: "Last Name",
               icon: Icons.person,
               hintText: "Your last name",
@@ -119,7 +100,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               height: 30,
             ),
             CustomTextInput(
-              controller: email,
+              controller: _emailController,
               labelText: "Email",
               icon: Icons.mail,
               hintText: "Your email",
@@ -128,7 +109,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               height: 30,
             ),
             CustomTextInput(
-              controller: password,
+              controller: _passwordController,
               labelText: "Password",
               icon: Icons.lock,
               obscureText: true,
