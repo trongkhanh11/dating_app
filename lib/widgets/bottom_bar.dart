@@ -1,3 +1,4 @@
+import 'package:dating_app/models/profile_model.dart';
 import 'package:dating_app/presentation/profile/personal_profile_screen.dart';
 import 'package:dating_app/presentation/home/home_screen.dart';
 import 'package:dating_app/themes/theme.dart';
@@ -6,7 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:iconly/iconly.dart';
 
 class BottomBar extends StatefulWidget {
-  const BottomBar({super.key});
+  final Profile? profile;
+  const BottomBar({
+    super.key,
+    required this.profile,
+  });
 
   @override
   State<BottomBar> createState() => _BottomBarState();

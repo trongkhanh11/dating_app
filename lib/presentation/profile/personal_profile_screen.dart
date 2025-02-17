@@ -1,11 +1,9 @@
-import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/widgets/cities_selection.dart';
 import 'package:dating_app/widgets/gender_selection.dart';
 import 'package:dating_app/widgets/image_picker_box.dart';
 import 'package:dating_app/widgets/interests_selection.dart';
 import 'package:dating_app/widgets/sexualOrientation_selection.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class PersonalProfileScreen extends StatefulWidget {
   const PersonalProfileScreen({super.key});
@@ -15,18 +13,8 @@ class PersonalProfileScreen extends StatefulWidget {
 }
 
 class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
-
-  @override 
-  void initState() {
-    super.initState();
-    final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
-    profileProvider.loadToken();
-  }
-
   @override
   Widget build(BuildContext context) {
-
-
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
@@ -49,7 +37,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
               ),
               SizedBox(height: 16),
               Text(
-                 'Your Name',
+                'Your Name',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 8),

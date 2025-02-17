@@ -1,123 +1,87 @@
+import 'package:dating_app/models/profile_model.dart';
 import 'package:dating_app/providers/api_service.dart';
+import 'package:dating_app/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 
 class ProfileProvider with ChangeNotifier {
-  bool get isAuthenticated => _usertoken != null;
-  String? _usertoken;
   bool isLoading = false;
   bool hasError = false;
+  Profile? _profile;
+  String errorMessage = '';
 
-  // Thông tin profile
-  String? userId;
-  String? displayName;
-  bool? isPublic;
-  int? age;
-  String? gender;
-  String? sexualOrientation;
-  String? bio;
-  List<String> interests = [];
-  String? location;
-  double? latitude;
-  double? longitude;
-  String? avatarUrl;
-
-  Future<void> loadToken() async {
-    final prefs = await SharedPreferences.getInstance();
-    _usertoken = prefs.getString("token");
-    notifyListeners();
-  }
+  Profile? get profile => _profile;
 
   Future<bool> createProfile(
-      String userId,
-      String displayName,
-      bool isPublic,
-      int age,
-      String gender,
-      String sexualOrientation,
-      String bio,
-      List<String> interests,
-      String location,
-      double latitude,
-      double longitude) async {
+      CreateProfileModel model, BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final token = authProvider.userModel?.token;
+
     try {
+      errorMessage = '';
+      isLoading = true;
+      notifyListeners();
+
       final response = await APIService.instance.request(
-          '/api/v1/profiles', // enter the endpoint for required API call
-          DioMethod.post,
-          param: {
-            "userId": userId,
-            "displayName": displayName,
-            "isPublic": isPublic,
-            "age": age,
-            "gender": gender,
-            "sexualOrientation": sexualOrientation,
-            "bio": bio,
-            "location": location,
-            "latitude": latitude,
-            "longitude": longitude,
-            "interests": interests,
-          },
-          contentType: 'application/json',
-          token: _usertoken);
+        '/profiles', // enter the endpoint for required API call
+        DioMethod.post,
+        param: model.toJson(),
+        contentType: 'application/json',
+        token: token,
+      );
 
       if (response.statusCode == 201) {
         debugPrint('Profile created successfully');
-        notifyListeners();
         return true;
       } else {
         debugPrint('API call failed: ${response.statusMessage}');
-        notifyListeners();
         return false;
       }
     } catch (e) {
       debugPrint('Network error occurred: $e');
-      notifyListeners();
       return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
     }
   }
 
-  Future<bool> getProfileByUserId(String userId) async {
-    isLoading = true;
-    notifyListeners();
+  Future<bool> getUserProfile(String userId, BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final token = authProvider.userModel?.token;
 
     try {
+      isLoading = true;
+      errorMessage = ''; // Clear previous errors
+      notifyListeners();
+
       final response = await APIService.instance.request(
-        '/api/v1/profiles/$userId', // Endpoint để lấy profile
-        DioMethod.get,
-        token: _usertoken,
-      );
+          '/profiles/user/$userId', // enter the endpoint for required API call
+          DioMethod.get,
+          contentType: 'application/json',
+          token: token);
+
+      print(response.data);
 
       if (response.statusCode == 200) {
-        final data = response.data;
-        this.userId = data['userId'];
-        displayName = data['displayName'];
-        isPublic = data['isPublic'];
-        age = data['age'];
-        gender = data['gender'];
-        sexualOrientation = data['sexualOrientation'];
-        bio = data['bio'];
-        location = data['location'];
-        latitude = data['latitude'];
-        longitude = data['longitude'];
-        avatarUrl = data['avatarUrl'];
-        interests = List<String>.from(data['interests'] ?? []);
-
-        isLoading = false;
-        hasError = false;
+        _profile = Profile.fromJson(response.data);
         notifyListeners();
         return true;
       } else {
         debugPrint('API call failed: ${response.statusMessage}');
-        hasError = true;
-        notifyListeners();
         return false;
       }
     } catch (e) {
       debugPrint('Network error occurred: $e');
-      hasError = true;
+      return false;
+    } finally {
       isLoading = false;
       notifyListeners();
-      return false;
     }
+  }
+
+  void clearData() {
+    isLoading = false;
+    notifyListeners();
   }
 }

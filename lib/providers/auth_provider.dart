@@ -1,122 +1,101 @@
-// lib/providers/auth_provider.dart
+import 'package:dating_app/models/profile_model.dart';
+import 'package:dating_app/models/user_model.dart';
+import 'package:dating_app/providers/profile_provider.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import 'package:dating_app/providers/api_service.dart';
 
 class AuthProvider with ChangeNotifier {
-  bool get isAuthenticated => _usertoken != null;
-  String? _usertoken;
   bool isLoading = false;
+  bool isLoggingOut = false;
   bool hasError = false;
-  String? _userId;
+  UserModel? _userModel;
+  Profile? _profile;
+  String errorMessage = '';
+
+  UserModel? get userModel => _userModel;
+  Profile? get profile => _profile;
+
   Future<bool> login(String email, String password) async {
     try {
       isLoading = true;
+      errorMessage = '';
       notifyListeners();
 
       final response = await APIService.instance.request(
-          '/api/v1/auth/email/login', // enter the endpoint for required API call
-          DioMethod.post,
-          param: {'email': email, 'password': password},
-          contentType: 'application/json',
-          token: '');
+        '/auth/email/login', // enter the endpoint for required API call
+        DioMethod.post,
+        param: {'email': email, 'password': password},
+        contentType: 'application/json',
+      );
 
       if (response.statusCode == 200) {
-        String token = response.data['token'];
-        _usertoken = token;
-        debugPrint('_usertoken: ${_usertoken}');
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('token', token);
-        final data = response.data;
-        _userId = data['user']?['id'];
-        isLoading = false;
+        _userModel = UserModel.fromJson(response.data);
         notifyListeners();
         return true;
       } else {
         debugPrint('API call failed: ${response.statusMessage}');
-        isLoading = false;
-        notifyListeners();
         return false;
       }
     } catch (e) {
-      debugPrint('Network error occurred: $e');
+      if (e is DioException) {
+        if (e.response?.statusCode == 422) {
+          errorMessage = "Invalid login credentials. Please try again.";
+        } else {
+          errorMessage = "An error occurred. Please try again later.";
+        }
+      } else {
+        errorMessage = "An error occurred. Please try again later.";
+      }
+      return false;
+    } finally {
       isLoading = false;
       notifyListeners();
-      return false;
     }
   }
 
-  Future<bool> register(
-      String email, String password, String firstName, String lastName) async {
+  Future<bool> register(RegisterModel model, BuildContext context) async {
     try {
       final response = await APIService.instance.request(
-          '/api/v1/auth/email/register', // enter the endpoint for required API call
-          DioMethod.post,
-          param: {
-            'email': email,
-            'password': password,
-            'firstName': firstName,
-            'lastName': lastName,
-          },
-          contentType: 'application/json',
-          token: '');
+        '/auth/email/register', // enter the endpoint for required API call
+        DioMethod.post,
+        param: model.toJson(),
+        contentType: 'application/json',
+      );
 
       if (response.statusCode == 201) {
-        if (response.data['data'] == null ||
-            response.data['data']['userId'] == null) {
-          debugPrint("Error: API response does not contain userId");
-          return false;
-        }
-
-        String userId = response.data['data']['userId'];
-        debugPrint('Registered userId: $userId');
-
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('userId', userId);
         notifyListeners();
-
         return true;
       } else {
         debugPrint('API call failed: ${response.statusMessage}');
-        notifyListeners();
         return false;
       }
     } catch (e) {
-      debugPrint('Network error occurred: $e');
-      notifyListeners();
+      errorMessage = "An error occurred. Please try again later.";
       return false;
     }
   }
 
-  Future<bool> checkUserProfile(String userId) async {
+  Future<void> logout(BuildContext context) async {
     try {
-      final response = await APIService.instance.request(
-          '/api/v1/profiles/user/$userId', // enter the endpoint for required API call
-          DioMethod.get,
-          contentType: 'application/json',
-          token: _usertoken);
-
-      if (response.statusCode == 200) {
-        return true;
-      } else {
-        debugPrint('API call failed: ${response.statusMessage}');
-        notifyListeners();
-        return false;
-      }
-    } catch (e) {
-      debugPrint('Network error occurred: $e');
+      isLoggingOut = true;
+      _userModel = null;
+      _profile = null;
+      errorMessage = '';
       notifyListeners();
-      return false;
+      // ignore: use_build_context_synchronously
+      Provider.of<ProfileProvider>(context, listen: false).clearData();
+    } catch (e) {
+      // ignore: use_build_context_synchronously
+      debugPrint('Network error occurred: $e');
+    } finally {
+      isLoggingOut = false;
+      isLoading = false;
+      errorMessage = '';
+      notifyListeners();
     }
-  }
-
-  void logout() {
-    _usertoken = null;
-    notifyListeners();
-  }
-
-  String? getUserId() {
-    return _userId;
+    // ignore: use_build_context_synchronously
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
   }
 }
