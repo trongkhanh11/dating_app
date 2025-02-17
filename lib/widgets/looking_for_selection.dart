@@ -1,40 +1,43 @@
 import 'package:flutter/material.dart';
 
-class GenderSelection extends StatefulWidget {
-  final String? initialGender;
+class LookingForSelection extends StatefulWidget {
+  final String? initialSelection;
   final ValueChanged<String>? onChanged;
 
-  const GenderSelection({
+  const LookingForSelection({
     super.key,
-    this.initialGender,
+    this.initialSelection,
     this.onChanged,
   });
 
   @override
-  _GenderSelectionState createState() => _GenderSelectionState();
+  _LookingForSelectionState createState() => _LookingForSelectionState();
 }
 
-class _GenderSelectionState extends State<GenderSelection> {
-  List<Map<String, String>> genderOptions = [
-    {"label": "Male", "value": "male"},
-    {"label": "Female", "value": "female"},
-    {"label": "Non-binary", "value": "non-binary"},
-    {"label": "Other", "value": "other"},
+class _LookingForSelectionState extends State<LookingForSelection> {
+  List<Map<String, String>> lookingForOptions = [
+    {"label": "Lover", "value": "lover"},
+    {"label": "Long-term Relationship", "value": "long_term"},
+    {"label": "Anything is possible", "value": "any"},
+    {"label": "Open Relationship", "value": "open"},
+    {"label": "New friends", "value": "friends"},
+    {"label": "I'm not so sure", "value": "other"},
   ];
-  String? selectedGender;
 
- @override
-void didUpdateWidget(covariant GenderSelection oldWidget) {
-  super.didUpdateWidget(oldWidget);
-  if (widget.initialGender != oldWidget.initialGender) {
-    setState(() {
-      selectedGender = widget.initialGender;
-    });
+  String? selectedLookingFor;
+
+  @override
+  void didUpdateWidget(covariant LookingForSelection oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialSelection != oldWidget.initialSelection) {
+      setState(() {
+        selectedLookingFor = widget.initialSelection;
+      });
+    }
   }
-}
 
-  void _showGenderSelectionSheet(BuildContext context) {
-    String? tempSelectedGender = selectedGender;
+  void _showLookingForSelectionSheet(BuildContext context) {
+    String? tempSelected = selectedLookingFor;
 
     showModalBottomSheet(
       context: context,
@@ -47,7 +50,7 @@ void didUpdateWidget(covariant GenderSelection oldWidget) {
         return StatefulBuilder(
           builder: (context, setStateBottomSheet) {
             return Container(
-              height: MediaQuery.of(context).size.height * 0.9,
+              height: MediaQuery.of(context).size.height * 0.6,
               padding: EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,17 +63,16 @@ void didUpdateWidget(covariant GenderSelection oldWidget) {
                         onPressed: () => Navigator.pop(context),
                       ),
                       Text(
-                        "Select Gender",
+                        "What are you looking for?",
                         style: TextStyle(
                             fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       TextButton(
                         onPressed: () {
                           setState(() {
-                            // 🔥 Cập nhật lại UI sau khi chọn xong
-                            selectedGender = tempSelectedGender;
+                            selectedLookingFor = tempSelected;
                           });
-                          widget.onChanged?.call(tempSelectedGender!);
+                          widget.onChanged?.call(tempSelected!);
                           Navigator.pop(context);
                         },
                         child: Text("Done", style: TextStyle(fontSize: 16)),
@@ -78,21 +80,20 @@ void didUpdateWidget(covariant GenderSelection oldWidget) {
                     ],
                   ),
                   Divider(),
-                  // Danh sách giới tính
                   Expanded(
                     child: ListView.builder(
-                      itemCount: genderOptions.length,
+                      itemCount: lookingForOptions.length,
                       itemBuilder: (context, index) {
-                        String label = genderOptions[index]['label']!;
-                        String value = genderOptions[index]['value']!;
+                        String label = lookingForOptions[index]['label']!;
+                        String value = lookingForOptions[index]['value']!;
                         return ListTile(
                           title: Text(label),
-                          trailing: tempSelectedGender == value
+                          trailing: tempSelected == value
                               ? Icon(Icons.check, color: Colors.redAccent)
                               : null,
                           onTap: () {
                             setStateBottomSheet(() {
-                              tempSelectedGender = value;
+                              tempSelected = value;
                             });
                           },
                         );
@@ -110,20 +111,23 @@ void didUpdateWidget(covariant GenderSelection oldWidget) {
 
   @override
   Widget build(BuildContext context) {
-    String selectedLabel = genderOptions.firstWhere(
-      (gender) => gender['value'] == selectedGender,
-      orElse: () => {"label": "Select Gender", "value": "unknown"},
+    String selectedLabel = lookingForOptions.firstWhere(
+      (item) => item['value'] == selectedLookingFor,
+      orElse: () => {"label": "Select your purpose", "value": "unknown"},
     )['label']!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GestureDetector(
-          onTap: () => _showGenderSelectionSheet(context),
+          onTap: () => _showLookingForSelectionSheet(context),
           child: Container(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
             decoration: BoxDecoration(
               color: Colors.white,
+              border: Border.all(color: Colors.transparent),
+              borderRadius: BorderRadius.circular(8)
+              ,
             ),
             width: double.infinity,
             child: Row(
@@ -132,9 +136,10 @@ void didUpdateWidget(covariant GenderSelection oldWidget) {
                 Text(
                   selectedLabel,
                   style: TextStyle(
-                      color:
-                          selectedGender == null ? Colors.grey : Colors.black,
-                      fontSize: 16),
+                    color:
+                        selectedLookingFor == null ? Colors.grey : Colors.black,
+                    fontSize: 16,
+                  ),
                 ),
                 Icon(Icons.arrow_drop_down, color: Colors.grey),
               ],

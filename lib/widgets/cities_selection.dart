@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
 
 class CityDropdownField extends StatefulWidget {
+  final String? initialCity;
+  final ValueChanged<String>? onChanged;
+
+  const CityDropdownField({
+    super.key,
+    this.initialCity,
+    this.onChanged,
+  });
+
   @override
   _CityDropdownFieldState createState() => _CityDropdownFieldState();
 }
@@ -16,7 +25,18 @@ class _CityDropdownFieldState extends State<CityDropdownField> {
     "Hue",
     "Vung Tau"
   ];
+
   String? selectedCity;
+
+  @override
+  void didUpdateWidget(covariant CityDropdownField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.initialCity != oldWidget.initialCity) {
+      setState(() {
+        selectedCity = widget.initialCity;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +44,8 @@ class _CityDropdownFieldState extends State<CityDropdownField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DropdownButtonFormField<String>(
-          value: selectedCity,
+          value: selectedCity ??
+              widget.initialCity, // Đảm bảo luôn lấy giá trị mới nhất
           hint: Text("Select a city"),
           items: cities.map((city) {
             return DropdownMenuItem(
@@ -36,13 +57,14 @@ class _CityDropdownFieldState extends State<CityDropdownField> {
             setState(() {
               selectedCity = value;
             });
+            if (value != null) {
+              widget.onChanged?.call(value);
+            }
           },
-         // style: TextStyle(fontSize: 16),
           decoration: InputDecoration(
             border: OutlineInputBorder(borderSide: BorderSide.none),
-          //  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           ),
- 
         ),
       ],
     );
