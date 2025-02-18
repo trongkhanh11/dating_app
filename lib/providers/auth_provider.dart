@@ -57,6 +57,9 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> register(RegisterModel model, BuildContext context) async {
     try {
+      isLoading = true;
+      errorMessage = '';
+      notifyListeners();
       final response = await APIService.instance.request(
         '/auth/email/register', // enter the endpoint for required API call
         DioMethod.post,

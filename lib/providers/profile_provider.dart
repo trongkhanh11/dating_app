@@ -8,10 +8,11 @@ class ProfileProvider with ChangeNotifier {
   bool isLoading = false;
   bool hasError = false;
   Profile? _profile;
+  Preferences? _preferences;
   String errorMessage = '';
 
   Profile? get profile => _profile;
-
+  Preferences? get preferences => _preferences;
   Future<bool> createProfile(
       CreateProfileModel model, BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -81,5 +82,71 @@ class ProfileProvider with ChangeNotifier {
   void clearData() {
     isLoading = false;
     notifyListeners();
+  }
+
+  Future<bool> createUserPreferences(
+      Preferences model, BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final token = authProvider.userModel?.token;
+
+    try {
+      errorMessage = '';
+      isLoading = true;
+      notifyListeners();
+
+      final response = await APIService.instance.request(
+        '/profiles', // enter the endpoint for required API call
+        DioMethod.post,
+        param: model.toJson(),
+        contentType: 'application/json',
+        token: token,
+      );
+
+      if (response.statusCode == 201) {
+        debugPrint('User Preferences created successfully');
+        return true;
+      } else {
+        debugPrint('API call failed: ${response.statusMessage}');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('Network error occurred: $e');
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> getUserPreferences(String userId, BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final token = authProvider.userModel?.token;
+
+    try {
+      isLoading = true;
+      errorMessage = '';
+      notifyListeners();
+
+      final response = await APIService.instance.request(
+          '/users/preferences/user/$userId', // enter the endpoint for required API call
+          DioMethod.get,
+          contentType: 'application/json',
+          token: token);
+      if (response.statusCode == 200) {
+        _preferences = Preferences.fromJson(response.data);
+
+        notifyListeners();
+        return true;
+      } else {
+        debugPrint('API call failed: ${response.statusMessage}');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('Network error occurred: $e');
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
   }
 }

@@ -16,7 +16,7 @@ class CityDropdownField extends StatefulWidget {
 
 class _CityDropdownFieldState extends State<CityDropdownField> {
   List<String> cities = [
-    "Hanoi",
+     "Hanoi",
     "Ho Chi Minh City",
     "Da Nang",
     "Hai Phong",
