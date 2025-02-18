@@ -14,7 +14,7 @@ class Profile {
   final bool isPublic;
   final String longitude;
   final String latitude;
-  final String sexualOrientation;
+  final List<String>? sexualOrientation;
 
   Profile({
     required this.id,
@@ -51,7 +51,9 @@ class Profile {
       isPublic: json['isPublic'],
       longitude: json['longitude'],
       latitude: json['latitude'],
-      sexualOrientation: json['sexualOrientation'],
+      sexualOrientation: (json['sexualOrientation'] as List<dynamic>?)
+          ?.map((item) => item as String)
+          .toList(),
     );
   }
 }
@@ -62,7 +64,7 @@ class CreateProfileModel {
   final bool isPublic;
   final int age;
   final String gender;
-  final String sexualOrientation;
+  final List<String> sexualOrientation;
   final String bio;
   final List<String> interests;
   final String location;
@@ -96,26 +98,6 @@ class CreateProfileModel {
       'location': location,
       'longitude': longitude,
       'latitude': latitude,
-    };
-  }
-}
-
-class UpdateProfileModel {
-  final String firstName;
-  final String lastName;
-  final String birthday;
-
-  UpdateProfileModel({
-    required this.firstName,
-    required this.lastName,
-    required this.birthday,
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      'firstName': firstName,
-      'lastName': lastName,
-      'birthday': birthday,
     };
   }
 }
