@@ -29,7 +29,7 @@ class _FirstTimeUpdateProfileScreenState
 
   bool isPublic = true;
   String? selectedGender;
-  String? selectedOrientation;
+  List<String> selectedOrientation = [];
   String? selectedCity;
   String? ageErrorMessage;
   List<String>? selectedLookingFor = [];
@@ -111,6 +111,8 @@ class _FirstTimeUpdateProfileScreenState
     }
   }
 
+  double latitude = 10.810370781525451;
+  double longitude = 106.66743096751458;
   void _submitForm() async {
     final profileProvider =
         Provider.of<ProfileProvider>(context, listen: false);
@@ -120,23 +122,32 @@ class _FirstTimeUpdateProfileScreenState
       isPublic: isPublic,
       age: int.tryParse(ageController.text) ?? 18,
       gender: selectedGender ?? "Other",
-      sexualOrientation: selectedOrientation ?? "Both",
+      sexualOrientation: selectedOrientation,
       bio: bioController.text,
-      interests: interests,
+      // interests: interests,
       location: selectedCity ?? "Unknown",
-      longitude: 10.810370781525451,
-      latitude: 106.66743096751458,
+      latitude: latitude,
+      longitude: longitude,
     );
 
     bool success =
         await profileProvider.createProfile(createProfileModel, context);
     if (success) {
-      debugPrint("User profile created successfully!");
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => BottomBar(profile: profileProvider.profile)),
-      );
+      Preferences createPreferences = Preferences(
+          userId: widget.userId,
+          hobbies: interests,
+          lookingFor: selectedLookingFor!);
+      bool preferenceSuccess = await profileProvider.createUserPreferences(
+          createPreferences, context);
+      if (preferenceSuccess) {
+        debugPrint("User profile created successfully!");
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) =>
+                  BottomBar(profile: profileProvider.profile)),
+        );
+      }
     } else {
       debugPrint("Failed to create profile");
     }
@@ -312,7 +323,8 @@ class _FirstTimeUpdateProfileScreenState
           itemCount: orientationOptions.length,
           itemBuilder: (context, index) {
             final option = orientationOptions[index];
-            final isSelected = selectedOrientation == option["value"];
+            final isSelected = selectedOrientation.contains(option["value"]);
+
             return ListTile(
               title: Text(option["label"]!),
               trailing: isSelected
@@ -320,7 +332,13 @@ class _FirstTimeUpdateProfileScreenState
                   : null,
               onTap: () {
                 setState(() {
-                  selectedOrientation = option["value"];
+                  if (isSelected) {
+                    selectedOrientation.remove(
+                        option["value"]); // Bỏ chọn nếu đã chọn trước đó
+                  } else {
+                    selectedOrientation
+                        .add(option["value"]!); // Thêm vào nếu chưa chọn
+                  }
                 });
               },
             );
