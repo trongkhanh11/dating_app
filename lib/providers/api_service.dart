@@ -12,9 +12,9 @@ class APIService {
 
   String get baseUrl {
     if (kDebugMode) {
-      return 'http://192.168.100.124:3000/api/v1/';
+      return 'http://192.168.100.137:3000/api/v1/';
     }
-    return 'http://192.168.100.124:3000/api/v1/';
+    return 'http://192.168.100.137:3000/api/v1/';
   }
 
   Future<Response> request(String endpoint, DioMethod method,
