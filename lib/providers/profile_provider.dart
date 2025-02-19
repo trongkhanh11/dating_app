@@ -82,7 +82,7 @@ class ProfileProvider with ChangeNotifier {
     }
   }
 
-  Future<List<String>?> uploadPhotos(
+  Future<void> uploadPhotos(
       String userId, List<File?> images, BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final token = authProvider.userModel?.token;
@@ -109,14 +109,12 @@ class ProfileProvider with ChangeNotifier {
           formData: formData, token: token);
 
       if (response.statusCode == 200) {
-        List<String> imageIds = List<String>.from(response.data);
+        //List<String> imageIds = List<String>.from(response.data);
         print("Ảnh đã tải lên thành công!");
         debugPrint('API call Success: ${response.statusMessage}');
-        return imageIds;
       } else {
         errorMessage = "Lỗi tải ảnh lên server!";
         debugPrint('API call failed: ${response.statusMessage}');
-        return null;
       }
     } catch (e) {
       errorMessage = "Lỗi: ${e.toString()}";

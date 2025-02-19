@@ -42,23 +42,11 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
       });
     }
 
-    // final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    // final profileProvider =
-    //     Provider.of<ProfileProvider>(context, listen: false);
-    // final userId = authProvider.profile?.user.id ?? "";
-    // List<String> fileIds= authProvider.profile?.files??[];
-    // await profileProvider.getProfilePhotos(fileIds, context);
-    // List? imagesUrl = profileProvider.images;
-    // print(imagesUrl);
-    // print('Profile: ${authProvider.profile}');
-    // print('UserId: $userId');
-    // final uploadImageIds =
-    //     await profileProvider.uploadPhotos(userId, _images, context);
-
-    // if (uploadImageIds != null) {
-    //   print("Upload image IDs: $uploadImageIds");
-    //   setState(() {});
-    // }
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final profileProvider =
+        Provider.of<ProfileProvider>(context, listen: false);
+    final userId = authProvider.userModel?.user.id ?? "";
+    await profileProvider.uploadPhotos(userId, _images, context);
   }
 
   void _showImageSourceDialog(int index) {
@@ -173,7 +161,8 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
               borderRadius: BorderRadius.circular(12),
               image: _images[index] != null
                   ? DecorationImage(
-                      image: NetworkImage(_images[index]!.path), fit: BoxFit.cover)
+                      image: NetworkImage(_images[index]!.path),
+                      fit: BoxFit.cover)
                   : null,
             ),
             child: _images[index] == null

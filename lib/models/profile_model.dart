@@ -101,6 +101,7 @@ class CreateProfileModel {
 
 
 class Preferences {
+  final String? id;
   final String userId;
   List<String> hobbies;
   List<String> lookingFor;
@@ -119,6 +120,7 @@ class Preferences {
   List<String>? sleepHabits;
 
   Preferences({
+    this.id,
     required this.userId,
     required this.hobbies,
     required this.lookingFor,
@@ -140,6 +142,7 @@ class Preferences {
   /// Chuyển đổi từ JSON sang object Preferences
   factory Preferences.fromJson(Map<String, dynamic> json) {
     return Preferences(
+      id: json['id'],
       userId: json['userId'],
       hobbies: List<String>.from(json['hobbies'] ?? []),
       lookingFor: List<String>.from(json['lookingFor'] ?? []),
