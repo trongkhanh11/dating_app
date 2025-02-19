@@ -1,5 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:dating_app/models/profile_model.dart';
 import 'package:dating_app/presentation/home/filter_screen.dart';
+import 'package:dating_app/providers/discovery_provider.dart';
+import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/themes/theme.dart';
 import 'package:dating_app/widgets/custom_action_button.dart';
 import 'package:dating_app/widgets/photo_progress_indicator.dart';
@@ -8,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,60 +24,36 @@ class _HomeScreenState extends State<HomeScreen> {
   final ScrollController scrollController = ScrollController();
   final BaseCacheManager cacheManager = DefaultCacheManager();
 
-  final List<Map<String, dynamic>> allUsers = [
-    {
-      'name': 'Ethan',
-      'age': 22,
-      'distance': 5,
-      'photos': [
-        'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg',
-        'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg',
-        'https://images.pexels.com/photos/428338/pexels-photo-428338.jpeg'
-      ],
-      'hobbies': ['Reading', 'Traveling']
-    },
-    {
-      'name': 'Sophia',
-      'age': 27,
-      'distance': 15,
-      'photos': [
-        'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg',
-        'https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg',
-      ],
-      'hobbies': ['Cooking', 'Dancing']
-    },
-    {
-      'name': 'Emma',
-      'age': 30,
-      'distance': 8,
-      'photos': [
-        'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg',
-      ],
-      'hobbies': ['Photography', 'Hiking']
-    },
-    {
-      'name': 'Olivia',
-      'age': 25,
-      'distance': 20,
-      'photos': [
-        'https://images.pexels.com/photos/428338/pexels-photo-428338.jpeg',
-        'https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg'
-      ],
-      'hobbies': ['Music', 'Gaming']
-    },
-  ];
-
-  List<Map<String, dynamic>> filteredUsers = [];
+  List<Profile> filteredUsers = [];
   double minAge = 18;
   double maxAge = 35;
   double maxDistance = 50;
 
   Map<int, int> photoIndexes = {};
+  Map<int, List> userPhotos = {};
 
   @override
   void initState() {
     super.initState();
-    _applyFilter();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      if (mounted) {
+        _applyFilter();
+      }
+    });
+  }
+
+  Future<void> _fetchProfilePhotos(int index, Profile user) async {
+    final profileProvider =
+        Provider.of<ProfileProvider>(context, listen: false);
+    if (user.files != null &&
+        user.files!.isNotEmpty &&
+        !userPhotos.containsKey(index)) {
+      await profileProvider.getProfilePhotos(user.files!, context);
+      List photos = profileProvider.images ?? [];
+      setState(() {
+        userPhotos[index] = photos;
+      });
+    }
   }
 
   void _changePhoto(int index, int change) {
@@ -83,7 +62,8 @@ class _HomeScreenState extends State<HomeScreen> {
         photoIndexes[index] = 0;
       }
       int currentIndex = photoIndexes[index]!;
-      int maxIndex = filteredUsers[index]['photos'].length - 1;
+      int maxIndex =
+          userPhotos[index] != null ? userPhotos[index]!.length - 1 : 0;
       int newIndex = (currentIndex + change).clamp(0, maxIndex);
 
       if (newIndex != currentIndex) {
@@ -92,14 +72,20 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _applyFilter() {
+  Future<void> _applyFilter() async {
+    final discoveryProvider =
+        Provider.of<DiscoveryProvider>(context, listen: false);
+    await discoveryProvider.discovery(
+        [minAge.toInt(), maxAge.toInt()], maxDistance.toInt(), context);
+
     setState(() {
-      filteredUsers = allUsers.where((user) {
-        return user['age'] >= minAge &&
-            user['age'] <= maxAge &&
-            user['distance'] <= maxDistance;
-      }).toList();
+      if (discoveryProvider.listProfile?.profiles != null) {
+        filteredUsers = discoveryProvider.listProfile!.profiles!;
+      }
     });
+    for (int i = 0; i < filteredUsers.length; i++) {
+      _fetchProfilePhotos(i, filteredUsers[i]);
+    }
     photoIndexes.clear();
   }
 
@@ -132,8 +118,6 @@ class _HomeScreenState extends State<HomeScreen> {
     scrollController.jumpTo(0.0);
     return true;
   }
-
-  void viewProfile(Map<String, dynamic> user) {}
 
   @override
   void dispose() {
@@ -176,157 +160,175 @@ class _HomeScreenState extends State<HomeScreen> {
           Expanded(
             child: Stack(
               children: [
-                CardSwiper(
-                  controller: controller,
-                  cardsCount: filteredUsers.length,
-                  onSwipe: onSwipe,
-                  padding: EdgeInsets.zero,
-                  numberOfCardsDisplayed: filteredUsers.length,
-                  backCardOffset: Offset.zero,
-                  cardBuilder: (context, index, hThreshold, vThreshold) {
-                    final user = filteredUsers[index];
-                    int currentPhotoIndex = photoIndexes[index] ?? 0;
+                filteredUsers.isNotEmpty
+                    ? Consumer<ProfileProvider>(
+                        builder: (context, profileProvider, child) {
+                        return CardSwiper(
+                          controller: controller,
+                          cardsCount: filteredUsers.length,
+                          onSwipe: onSwipe,
+                          padding: EdgeInsets.zero,
+                          numberOfCardsDisplayed: 1,
+                          backCardOffset: Offset.zero,
+                          cardBuilder:
+                              (context, index, hThreshold, vThreshold) {
+                            final user = filteredUsers[index];
+                            int currentPhotoIndex = photoIndexes[index] ?? 0;
 
-                    final absH = hThreshold.abs();
-                    final absV = vThreshold.abs();
+                            final absH = hThreshold.abs();
+                            final absV = vThreshold.abs();
 
-                    String? label;
-                    String imageUrl = "";
-                    double rotationAngle = 0;
+                            String? label;
+                            String imageUrl = "";
+                            double rotationAngle = 0;
 
-                    if (absV > absH && vThreshold < 0) {
-                      label = "SUPER LIKE";
-                      imageUrl = "assets/images/super_like.png";
-                    } else if (hThreshold < 0) {
-                      label = "LIKE";
-                      imageUrl = "assets/images/like.png";
-                      rotationAngle = 0.3;
-                    } else if (hThreshold > 0) {
-                      label = "NOPE";
-                      imageUrl = "assets/images/nope.png";
-                      rotationAngle = -0.3;
-                    }
+                            if (absV > absH && vThreshold < 0) {
+                              label = "SUPER LIKE";
+                              imageUrl = "assets/images/super_like.png";
+                            } else if (hThreshold < 0) {
+                              label = "LIKE";
+                              imageUrl = "assets/images/like.png";
+                              rotationAngle = 0.3;
+                            } else if (hThreshold > 0) {
+                              label = "NOPE";
+                              imageUrl = "assets/images/nope.png";
+                              rotationAngle = -0.3;
+                            }
 
-                    return SingleChildScrollView(
-                      controller: scrollController,
-                      child: Container(
-                        margin: EdgeInsets.symmetric(horizontal: 5),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              height: MediaQuery.of(context).size.height - 180,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(16),
-                                  bottom: Radius.circular(16),
+                            return SingleChildScrollView(
+                              controller: scrollController,
+                              child: Container(
+                                margin: EdgeInsets.symmetric(horizontal: 5),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(18),
                                 ),
-                                child: Stack(
-                                  fit: StackFit.expand,
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    GestureDetector(
-                                      onTapUp: (details) async {
-                                        double screenWidth =
-                                            MediaQuery.of(context).size.width;
-                                        double tapPosition =
-                                            details.localPosition.dx;
+                                    SizedBox(
+                                      height:
+                                          MediaQuery.of(context).size.height -
+                                              180,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(16),
+                                          bottom: Radius.circular(16),
+                                        ),
+                                        child: Stack(
+                                          fit: StackFit.expand,
+                                          children: [
+                                            GestureDetector(
+                                              onTapUp: (details) async {
+                                                double screenWidth =
+                                                    MediaQuery.of(context)
+                                                        .size
+                                                        .width;
+                                                double tapPosition =
+                                                    details.localPosition.dx;
 
-                                        if (tapPosition < screenWidth / 2) {
-                                          _changePhoto(index, -1);
-                                        } else {
-                                          _changePhoto(index, 1);
-                                        }
-                                      },
-                                      child: CachedNetworkImage(
-                                        key: ValueKey(
-                                            user['photos'][currentPhotoIndex]),
-                                        imageUrl: user['photos']
-                                            [currentPhotoIndex],
-                                        cacheManager: cacheManager,
-                                        fit: BoxFit.cover,
-                                        placeholder: (context, url) =>
-                                            const Center(
-                                                child:
-                                                    CircularProgressIndicator()),
-                                        errorWidget: (context, url, error) =>
-                                            Image.asset(
-                                                'assets/images/placeholder.png'),
-                                      ),
-                                    ),
-                                    _buildUserInfo(user),
-                                    if (label != null)
-                                      Positioned(
-                                        top: label == "SUPER LIKE" ? null : 10,
-                                        bottom:
-                                            label == "SUPER LIKE" ? 20 : null,
-                                        left: (label == "NOPE" ||
-                                                label == "SUPER LIKE")
-                                            ? 10
-                                            : null,
-                                        right: (label == "LIKE" ||
-                                                label == "SUPER LIKE")
-                                            ? 10
-                                            : null,
-                                        child: Opacity(
-                                          opacity: ((label == "SUPER LIKE"
-                                                      ? absV
-                                                      : absH) *
-                                                  2.0)
-                                              .clamp(0.0, 1.0),
-                                          child: Transform.rotate(
-                                            angle: rotationAngle,
-                                            child: Image.asset(
-                                              imageUrl,
-                                              width: label == "SUPER LIKE"
-                                                  ? 200
-                                                  : 140,
-                                              height: label == "SUPER LIKE"
-                                                  ? 200
-                                                  : 140,
+                                                if (tapPosition <
+                                                    screenWidth / 2) {
+                                                  _changePhoto(index, -1);
+                                                } else {
+                                                  _changePhoto(index, 1);
+                                                }
+                                              },
+                                              child: userPhotos
+                                                          .containsKey(index) &&
+                                                      userPhotos[index]!
+                                                          .isNotEmpty
+                                                  ? Image.network(
+                                                      userPhotos[index]![
+                                                          currentPhotoIndex],
+                                                      fit: BoxFit.cover,
+                                                    )
+                                                  : Image.asset(
+                                                      'assets/images/placeholder.png',
+                                                      fit: BoxFit.cover),
                                             ),
-                                          ),
+                                            _buildUserInfo(user),
+                                            if (label != null)
+                                              Positioned(
+                                                top: label == "SUPER LIKE"
+                                                    ? null
+                                                    : 10,
+                                                bottom: label == "SUPER LIKE"
+                                                    ? 20
+                                                    : null,
+                                                left: (label == "NOPE" ||
+                                                        label == "SUPER LIKE")
+                                                    ? 10
+                                                    : null,
+                                                right: (label == "LIKE" ||
+                                                        label == "SUPER LIKE")
+                                                    ? 10
+                                                    : null,
+                                                child: Opacity(
+                                                  opacity:
+                                                      ((label == "SUPER LIKE"
+                                                                  ? absV
+                                                                  : absH) *
+                                                              2.0)
+                                                          .clamp(0.0, 1.0),
+                                                  child: Transform.rotate(
+                                                    angle: rotationAngle,
+                                                    child: Image.asset(
+                                                      imageUrl,
+                                                      width:
+                                                          label == "SUPER LIKE"
+                                                              ? 200
+                                                              : 140,
+                                                      height:
+                                                          label == "SUPER LIKE"
+                                                              ? 200
+                                                              : 140,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            PhotoProgressIndicator(
+                                              index: index,
+                                              photoIndexes: photoIndexes,
+                                              filteredUsers: filteredUsers,
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                    PhotoProgressIndicator(
-                                      index: index,
-                                      photoIndexes: photoIndexes,
-                                      filteredUsers: filteredUsers,
                                     ),
+                                    Container(
+                                      margin:
+                                          EdgeInsets.symmetric(vertical: 30),
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 20),
+                                      decoration:
+                                          BoxDecoration(color: Colors.white),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            "\"Adventurer at heart, tech enthusiast by day. Love exploring new places, good coffee, and deep conversations. Let’s make memories one swipe at a time!\"",
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 30),
+                                          //_buildInterests(user['hobbies']),
+                                        ],
+                                      ),
+                                    ),
+                                    _buildBottomButtons(),
                                   ],
                                 ),
                               ),
-                            ),
-                            Container(
-                              margin: EdgeInsets.symmetric(vertical: 30),
-                              padding: EdgeInsets.symmetric(horizontal: 20),
-                              decoration: BoxDecoration(color: Colors.white),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    "\"Adventurer at heart, tech enthusiast by day. Love exploring new places, good coffee, and deep conversations. Let’s make memories one swipe at a time!\"",
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 30),
-                                  _buildInterests(user['hobbies']),
-                                ],
-                              ),
-                            ),
-                            _buildBottomButtons(),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                            );
+                          },
+                        );
+                      })
+                    : Center(child: CircularProgressIndicator()),
               ],
             ),
           ),
@@ -335,7 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildUserInfo(Map<String, dynamic> user) {
+  Widget _buildUserInfo(Profile user) {
     return Align(
       alignment: Alignment.bottomLeft,
       child: Container(
@@ -360,7 +362,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 children: [
                   Text(
-                    '${user['name']}',
+                    user.displayName,
                     style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
@@ -369,7 +371,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   SizedBox(width: 12),
                   Text(
-                    '${user['age']}',
+                    '${user.age}',
                     style: const TextStyle(
                       fontSize: 28,
                       color: Colors.white,
@@ -386,7 +388,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   SizedBox(width: 10),
                   Text(
-                    '${user['distance']} km away',
+                    '10 km away',
                     style: TextStyle(fontSize: 16, color: Colors.white70),
                   ),
                 ],
@@ -399,10 +401,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     color: Colors.white70,
                   ),
                   SizedBox(width: 10),
-                  Text(
-                    'Hobbies: ${user['hobbies'].join(', ')}',
-                    style: TextStyle(fontSize: 16, color: Colors.white70),
-                  ),
                 ],
               ),
             ]),

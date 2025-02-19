@@ -1,5 +1,6 @@
 import 'package:dating_app/presentation/authentication/login/login_screen.dart';
 import 'package:dating_app/providers/auth_provider.dart';
+import 'package:dating_app/providers/discovery_provider.dart';
 import 'package:dating_app/providers/preferences_provider.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/themes/theme.dart';
@@ -15,7 +16,8 @@ void main() {
         ChangeNotifierProvider(create: (context) => LocaleProvider()),
         ChangeNotifierProvider(create: (context) => AuthProvider()),
         ChangeNotifierProvider(create: (context) => ProfileProvider()),
-        ChangeNotifierProvider(create: (context)=> PreferencesProvider())
+        ChangeNotifierProvider(create: (context) => DiscoveryProvider()),
+        ChangeNotifierProvider(create: (context) => PreferencesProvider())
       ],
       child: const MyApp(),
     ),
@@ -29,18 +31,19 @@ class MyApp extends StatelessWidget {
     final localeProvider = Provider.of<LocaleProvider>(context);
 
     return MaterialApp(
-        theme: AppTheme.appTheme,
-        locale: localeProvider.locale, // Set default locale to Vietnamese
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('en'), // English
-          Locale('vi'), // Vietnamese
-        ],
-        debugShowCheckedModeBanner: false,
-        home: const LoginScreen());
+      theme: AppTheme.appTheme,
+      locale: localeProvider.locale, // Set default locale to Vietnamese
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'), // English
+        Locale('vi'), // Vietnamese
+      ],
+      debugShowCheckedModeBanner: false,
+      home: const LoginScreen(),
+    );
   }
 }

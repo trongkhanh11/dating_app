@@ -1,9 +1,10 @@
+import 'package:dating_app/models/profile_model.dart';
 import 'package:flutter/material.dart';
 
 class PhotoProgressIndicator extends StatelessWidget {
   final int index;
   final Map<int, int> photoIndexes;
-  final List<Map<String, dynamic>> filteredUsers;
+  final List<Profile> filteredUsers;
 
   const PhotoProgressIndicator({
     super.key,
@@ -15,7 +16,7 @@ class PhotoProgressIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     int currentPhotoIndex = photoIndexes[index] ?? 0;
-    int totalPhotos = filteredUsers[index]['photos'].length;
+    int totalPhotos = filteredUsers[index].files?.length ?? 0;
 
     return totalPhotos != 1
         ? Positioned(

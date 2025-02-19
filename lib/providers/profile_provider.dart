@@ -12,9 +12,11 @@ class ProfileProvider with ChangeNotifier {
   bool isLoading = false;
   bool hasError = false;
   Profile? _profile;
+  List? _images;
   String errorMessage = '';
 
   Profile? get profile => _profile;
+  List? get images => _images;
 
   Future<bool> createProfile(
       CreateProfileModel model, BuildContext context) async {
@@ -82,6 +84,38 @@ class ProfileProvider with ChangeNotifier {
     }
   }
 
+  Future<void> getProfilePhotos(
+      List<String> fileIds, BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final token = authProvider.userModel?.token;
+
+    try {
+      errorMessage = '';
+      isLoading = true;
+      notifyListeners();
+
+      final response = await APIService.instance.request(
+        '/profiles/photos', // enter the endpoint for required API call
+        DioMethod.post,
+        param: {'fileIds': fileIds},
+        contentType: 'application/json',
+        token: token,
+      );
+
+      if (response.statusCode == 201) {
+        _images = response.data['images'];
+        debugPrint('Get photos created successfully');
+      } else {
+        debugPrint('API call failed: ${response.statusMessage}');
+      }
+    } catch (e) {
+      debugPrint('Network error occurred: $e');
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> uploadPhotos(
       String userId, List<File?> images, BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -121,41 +155,6 @@ class ProfileProvider with ChangeNotifier {
 
       debugPrint('Network error occurred: $e');
       return null;
-    } finally {
-      isLoading = false;
-      notifyListeners();
-    }
-  }
-
-  List? _images;
-  List? get images => _images;
-
-  Future<void> getProfilePhotos(
-      List<String> fileIds, BuildContext context) async {
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final token = authProvider.userModel?.token;
-
-    try {
-      errorMessage = '';
-      isLoading = true;
-      notifyListeners();
-
-      final response = await APIService.instance.request(
-        '/profiles/photos', // enter the endpoint for required API call
-        DioMethod.post,
-        param: {'fileIds': fileIds},
-        contentType: 'application/json',
-        token: token,
-      );
-
-      if (response.statusCode == 201) {
-        _images = response.data['images'];
-        debugPrint('Get photos created successfully');
-      } else {
-        debugPrint('API call failed: ${response.statusMessage}');
-      }
-    } catch (e) {
-      debugPrint('Network error occurred: $e');
     } finally {
       isLoading = false;
       notifyListeners();

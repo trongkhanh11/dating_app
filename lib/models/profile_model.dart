@@ -1,5 +1,19 @@
 import 'package:dating_app/models/user_model.dart';
 
+class ListProfile {
+  List<Profile>? profiles;
+
+  ListProfile({this.profiles});
+
+  factory ListProfile.fromJson(Map<String, dynamic> json) {
+    return ListProfile(
+      profiles: json["data"] != null
+          ? List<Profile>.from(json["data"].map((x) => Profile.fromJson(x)))
+          : [],
+    );
+  }
+}
+
 class Profile {
   final String id;
   final User user;
@@ -98,7 +112,6 @@ class CreateProfileModel {
     };
   }
 }
-
 
 class Preferences {
   final String? id;
