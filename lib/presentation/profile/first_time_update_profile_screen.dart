@@ -146,9 +146,7 @@ class _FirstTimeUpdateProfileScreenState
         debugPrint("User profile created successfully!");
         Navigator.push(
           context,
-          MaterialPageRoute(
-              builder: (context) =>
-                  BottomBar(profile: profileProvider.profile)),
+          MaterialPageRoute(builder: (context) => BottomBar()),
         );
       }
     } else {

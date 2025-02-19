@@ -46,11 +46,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         if (hasProfile) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => BottomBar(
-                profile: authProvider.profile,
-              ),
-            ),
+            MaterialPageRoute(builder: (context) => BottomBar()),
           );
           return;
         } else {

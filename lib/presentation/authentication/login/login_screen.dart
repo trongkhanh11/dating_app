@@ -35,11 +35,7 @@ class _LoginViewState extends State<LoginScreen> {
         if (hasProfile) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(
-              builder: (context) => BottomBar(
-                profile: authProvider.profile,
-              ),
-            ),
+            MaterialPageRoute(builder: (context) => BottomBar()),
           );
           return;
         } else {

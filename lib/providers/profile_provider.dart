@@ -195,6 +195,8 @@ class ProfileProvider with ChangeNotifier {
 
   void clearData() {
     isLoading = false;
+    _profile = null;
+    _images = null;
     notifyListeners();
   }
 }
