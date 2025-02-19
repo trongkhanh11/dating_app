@@ -23,7 +23,7 @@ class PersonalProfileScreen extends StatefulWidget {
 class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
   bool isLoading = true;
 
-  final TextEditingController bioController = TextEditingController();
+  TextEditingController bioController = TextEditingController();
   bool isPublic = true;
   String? selectedGender;
   List<String> selectedOrientation = [];
@@ -33,6 +33,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
   List? imagesUrl = [];
   String displayName = "";
   int age = 0;
+  String id = "";
   @override
   void initState() {
     super.initState();
@@ -56,11 +57,25 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
     //imagesUrl = profileProvider.images;
     await profileProvider.getUserProfile(userId, context);
     await preferencesProvider.getUserPreferences(userId, context);
+    bioController = TextEditingController(text:profileProvider.profile?.bio);
     lookingFor = preferencesProvider.preferences!.lookingFor;
     selectedOrientation = profileProvider.profile?.sexualOrientation ?? [];
     selectedGender = profileProvider.profile?.gender;
     selectedCity = profileProvider.profile?.location;
-    print("preferences id: ${preferencesProvider.preferences?.id}");
+    id = preferencesProvider.preferences?.id ?? "";
+  }
+
+  void updatedPreferenceField(String field, dynamic value) {
+    final Map<String, dynamic> updatedData = {field: value};
+    final preferencesProvider =
+        Provider.of<PreferencesProvider>(context, listen: false);
+    preferencesProvider.updateUserPreferences(id, updatedData, context);
+  }
+
+  void updatedProfileField(String field,dynamic value){
+     final Map<String, dynamic> updatedData = {field: value};
+     final profileProvider = Provider.of<ProfileProvider>(context,listen: false);
+     profileProvider.updateUserProfile(id, updatedData, context);
   }
 
   @override
@@ -140,12 +155,14 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                 Container(
                   color: Colors.white,
                   child: TextField(
-                    controller: TextEditingController(
-                        text: profileProvider.profile!.bio),
+                    controller: bioController,
                     maxLength: 500,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(borderSide: BorderSide.none),
                     ),
+                    onEditingComplete: (){
+                      updatedProfileField('bio', bioController.text);
+                    },
                   ),
                 ),
                 SizedBox(height: 16),
@@ -174,6 +191,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                         interests =
                             newInterests; // Cập nhật lại danh sách sở thích
                       });
+                      updatedPreferenceField('hobbies', newInterests);
                     },
                   ),
                 ),
@@ -199,6 +217,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                           newLookingFor
                         ];
                       });
+                      updatedPreferenceField('lookingFor', newLookingFor);
                     },
                   ),
                 ),
@@ -220,12 +239,12 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                   color: Colors.white,
                   child: GenderSelection(
                     initialGender: selectedGender,
-                    // onChanged: (newGender) {
-                    //   setState(() {
-                    //     selectedGender = newGender;
-                    //   });
-                    //   profileProvider.profile?.gender = newGender;
-                    // },
+                    onChanged: (newGender) {
+                      setState(() {
+                        selectedGender = newGender;
+                      });
+                      //profileProvider.profile?.gender = newGender;
+                    },
                   ),
                 ),
                 SizedBox(height: 16),
@@ -243,7 +262,14 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                   //   3height: 50,
                   child: LanguageSelection(
                       initialLanguages:
-                          preferencesProvider.preferences?.languages),
+                          preferencesProvider.preferences?.languages,
+                      onChanged: (newLanguages) {
+                        setState(() {
+                          preferencesProvider.preferences?.languages =
+                              newLanguages;
+                        });
+                        updatedPreferenceField('languages', newLanguages);
+                      }),
                 ),
 
                 SizedBox(height: 16),
@@ -279,7 +305,13 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                             {"label": "Capricorn", "value": "capricorn"},
                             {"label": "Aquarius", "value": "aquarius"},
                             {"label": "Pisces", "value": "pisces"},
-                          ]),
+                          ],
+                        onChanged: (newZodiac) {
+                          setState(() {
+                             preferencesProvider.preferences?.zodiacSigns = newZodiac;
+                          });
+                          updatedPreferenceField('zodiacSigns', newZodiac);
+                        },),
                       SelectionWidget(
                           title: "Education",
                           initialSelection:
@@ -290,7 +322,12 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                             {"label": "Master's Degree", "value": "master"},
                             {"label": "PhD", "value": "phd"},
                             {"label": "Other", "value": "other"},
-                          ]),
+                          ],onChanged: (newEducation) {
+                          setState(() {
+                             preferencesProvider.preferences?.education = newEducation;
+                          });
+                          updatedPreferenceField('education', newEducation);
+                        },),
                       SelectionWidget(
                           title: "Future Family",
                           initialSelection:
@@ -300,7 +337,12 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                             {"label": "Married", "value": "married"},
                             {"label": "With Kids", "value": "with_kids"},
                             {"label": "Other", "value": "other"},
-                          ]),
+                          ],onChanged: (newFutureFamily) {
+                          setState(() {
+                             preferencesProvider.preferences?.futureFamily = newFutureFamily;
+                          });
+                          updatedPreferenceField('futureFamily', newFutureFamily);
+                        },),
                       SelectionWidget(
                           title: "Personality Style",
                           initialSelection:
@@ -310,7 +352,12 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                             {"label": "Extrovert", "value": "extrovert"},
                             {"label": "Ambivert", "value": "ambivert"},
                             {"label": "Other", "value": "other"},
-                          ]),
+                          ],onChanged: (newPersonality) {
+                          setState(() {
+                             preferencesProvider.preferences?.personalityTypes = newPersonality;
+                          });
+                          updatedPreferenceField('personalityTypes', newPersonality);
+                        },),
                       SelectionWidget(
                           title: "Communication Style",
                           initialSelection: preferencesProvider
@@ -320,7 +367,13 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                             {"label": "Indirect", "value": "indirect"},
                             {"label": "Assertive", "value": "assertive"},
                             {"label": "Passive", "value": "passive"},
-                          ])
+                          ],
+                          onChanged: (newCommunication) {
+                          setState(() {
+                             preferencesProvider.preferences?.communicationStyles = newCommunication;
+                          });
+                          updatedPreferenceField('communicationStyles', newCommunication);
+                        },)
                     ],
                   ),
                 ),
@@ -350,7 +403,13 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                             {"label": "Cat", "value": "cat"},
                             {"label": "Bird", "value": "bird"},
                             {"label": "Fish", "value": "fish"},
-                          ]),
+                          ],
+                          onChanged: (newPet) {
+                          setState(() {
+                             preferencesProvider.preferences?.petPreferences = newPet;
+                          });
+                          updatedPreferenceField('petPreferences', newPet);
+                        },),
                       SelectionWidget(
                         title: "Drinking",
                         initialSelection:
@@ -359,7 +418,12 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                           {"label": "Never", "value": "never"},
                           {"label": "Social", "value": "social"},
                           {"label": "Often", "value": "often"},
-                        ],
+                        ],onChanged: (newDrinking) {
+                          setState(() {
+                             preferencesProvider.preferences?.drinking = newDrinking;
+                          });
+                          updatedPreferenceField('drinking', newDrinking);
+                        },
                       ),
                       SelectionWidget(
                           title: "Smoking",
@@ -369,7 +433,13 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                             {"label": "Never", "value": "never"},
                             {"label": "Occasionally", "value": "occasionally"},
                             {"label": "Regularly", "value": "regularly"},
-                          ]),
+                          ],
+                          onChanged: (newSmoking) {
+                          setState(() {
+                             preferencesProvider.preferences?.smoking = newSmoking;
+                          });
+                          updatedPreferenceField('smoking', newSmoking);
+                        },),
                       SelectionWidget(
                         title: "Exercise",
                         initialSelection:
@@ -379,6 +449,12 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                           {"label": "Weekly", "value": "weekly"},
                           {"label": "Daily", "value": "daily"},
                         ],
+                        onChanged: (newExercise) {
+                          setState(() {
+                             preferencesProvider.preferences?.exercise = newExercise;
+                          });
+                          updatedPreferenceField('exercise', newExercise);
+                        },
                       ),
                       SelectionWidget(
                           title: "Diet",
@@ -395,7 +471,13 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                             {"label": "Dairy-Free", "value": "dairy_free"},
                             {"label": "Low-Carb", "value": "low_carb"},
                             {"label": "High-Protein", "value": "high_protein"},
-                          ]),
+                          ],
+                          onChanged: (newDiet) {
+                          setState(() {
+                             preferencesProvider.preferences?.diet = newDiet;
+                          });
+                          updatedPreferenceField('diet', newDiet);
+                        },),
                       SelectionWidget(
                           title: "Social Media",
                           initialSelection:
@@ -413,7 +495,12 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                             {"label": "Discord", "value": "discord"},
                             {"label": "Telegram", "value": "telegram"},
                             {"label": "WhatsApp", "value": "whatsapp"},
-                          ]),
+                          ],onChanged: (newSocialMedia) {
+                          setState(() {
+                             preferencesProvider.preferences?.socialMedia = newSocialMedia;
+                          });
+                          updatedPreferenceField('socialMedia', newSocialMedia);
+                        },),
                       SelectionWidget(
                           title: "Sleep Habit",
                           initialSelection:
@@ -431,7 +518,13 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                               "value": "heavy_sleeper"
                             },
                             {"label": "Irregular Sleep", "value": "irregular"},
-                          ])
+                          ],
+                          onChanged: (newSleepHabit) {
+                          setState(() {
+                             preferencesProvider.preferences?.sleepHabits = newSleepHabit;
+                          });
+                          updatedPreferenceField('sleepHabits', newSleepHabit);
+                        },)
                     ],
                   ),
                 ),

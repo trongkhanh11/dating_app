@@ -161,7 +161,11 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
               borderRadius: BorderRadius.circular(12),
               image: _images[index] != null
                   ? DecorationImage(
-                      image: NetworkImage(_images[index]!.path),
+                      image: _images[index]!.path.startsWith('http')
+                          ? NetworkImage(
+                              _images[index]!.path) // Nếu là URL từ server
+                          : FileImage(File(_images[index]!.path))
+                              as ImageProvider, // Nếu là file cục bộ
                       fit: BoxFit.cover)
                   : null,
             ),
