@@ -33,7 +33,8 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
   List? imagesUrl = [];
   String displayName = "";
   int age = 0;
-  String id = "";
+  String preferencesId = "";
+  String profileId = "";
   @override
   void initState() {
     super.initState();
@@ -58,25 +59,32 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
     await profileProvider.getUserProfile(userId, context);
     await preferencesProvider.getUserPreferences(userId, context);
     bioController = TextEditingController(text: profileProvider.profile?.bio);
-    lookingFor = preferencesProvider.preferences!.lookingFor;
+    //lookingFor = preferencesProvider.preferences!.lookingFor;
     selectedOrientation = profileProvider.profile?.sexualOrientation ?? [];
     selectedGender = profileProvider.profile?.gender;
     selectedCity = profileProvider.profile?.location;
-    id = preferencesProvider.preferences?.id ?? "";
+    preferencesId = preferencesProvider.preferences?.id ?? "";
+    profileId = profileProvider.profile?.id ?? "";
+    print("profile id ${profileProvider.profile?.id}");
+    print("id ${preferencesProvider.preferences?.id}");
+    print(preferencesProvider.preferences?.lookingFor);
   }
 
   void updatedPreferenceField(String field, dynamic value) {
     final Map<String, dynamic> updatedData = {field: value};
     final preferencesProvider =
         Provider.of<PreferencesProvider>(context, listen: false);
-    preferencesProvider.updateUserPreferences(id, updatedData, context);
+    print("id update ${preferencesProvider.preferences?.id}");
+    preferencesProvider.updateUserPreferences(
+        preferencesId, updatedData, context);
   }
 
   void updatedProfileField(String field, dynamic value) {
     final Map<String, dynamic> updatedData = {field: value};
     final profileProvider =
         Provider.of<ProfileProvider>(context, listen: false);
-    profileProvider.updateUserProfile(id, updatedData, context);
+    print("id update ${profileProvider.profile?.id}");
+    profileProvider.updateUserProfile(profileId, updatedData, context);
   }
 
   @override
@@ -166,13 +174,13 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                       Container(
                         color: Colors.white,
                         child: TextField(
-                          controller: TextEditingController(
-                              text: profileProvider.profile!.bio),
+                          controller: bioController,
                           maxLength: 500,
                           decoration: InputDecoration(
                             border:
                                 OutlineInputBorder(borderSide: BorderSide.none),
                           ),
+                         onEditingComplete: ()=>updatedProfileField('bio', bioController.text),
                         ),
                       ),
                       SizedBox(height: 16),
@@ -199,9 +207,10 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                               preferencesProvider.preferences?.hobbies ?? [],
                           onChanged: (newInterests) {
                             setState(() {
-                              interests =
+                              preferencesProvider.preferences?.hobbies =
                                   newInterests; // Cập nhật lại danh sách sở thích
                             });
+                            updatedPreferenceField('hobbies', newInterests);
                           },
                         ),
                       ),
@@ -219,14 +228,19 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                         color: Colors.white,
                         //   3height: 50,
                         child: LookingForSelection(
-                          initialSelection: lookingFor.isNotEmpty == true
-                              ? lookingFor.first
+                          initialSelection: preferencesProvider
+                                      .preferences?.lookingFor.isNotEmpty ==
+                                  true
+                              ? preferencesProvider
+                                  .preferences!.lookingFor.first
                               : null,
                           onChanged: (newLookingFor) {
                             setState(() {
                               preferencesProvider.preferences?.lookingFor = [
                                 newLookingFor
                               ];
+                              updatedPreferenceField(
+                                  'lookingFor', [newLookingFor]);
                             });
                           },
                         ),
@@ -249,12 +263,12 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                         color: Colors.white,
                         child: GenderSelection(
                           initialGender: selectedGender,
-                          // onChanged: (newGender) {
-                          //   setState(() {
-                          //     selectedGender = newGender;
-                          //   });
-                          //   profileProvider.profile?.gender = newGender;
-                          // },
+                          onChanged: (newGender) {
+                            setState(() {
+                              selectedGender = newGender;
+                            });
+                              updatedProfileField('gender', newGender);
+                          },
                         ),
                       ),
                       SizedBox(height: 16),
@@ -271,8 +285,16 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                         color: Colors.white,
                         //   3height: 50,
                         child: LanguageSelection(
-                            initialLanguages:
-                                preferencesProvider.preferences?.languages),
+                          initialLanguages:
+                              preferencesProvider.preferences?.languages,
+                          onChanged: (newLanguages) {
+                            setState(() {
+                              preferencesProvider.preferences?.languages =
+                                  newLanguages;
+                            });
+                            updatedPreferenceField('languages', newLanguages);
+                          },
+                        ),
                       ),
 
                       SizedBox(height: 16),
@@ -292,26 +314,35 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                         child: Column(
                           children: [
                             SelectionWidget(
-                                title: "Zodiac Sign",
-                                initialSelection: preferencesProvider
-                                    .preferences?.zodiacSigns,
-                                options: [
-                                  {"label": "Aries", "value": "aries"},
-                                  {"label": "Taurus", "value": "taurus"},
-                                  {"label": "Gemini", "value": "gemini"},
-                                  {"label": "Cancer", "value": "cancer"},
-                                  {"label": "Leo", "value": "leo"},
-                                  {"label": "Virgo", "value": "virgo"},
-                                  {"label": "Libra", "value": "libra"},
-                                  {"label": "Scorpio", "value": "scorpio"},
-                                  {
-                                    "label": "Sagittarius",
-                                    "value": "sagittarius"
-                                  },
-                                  {"label": "Capricorn", "value": "capricorn"},
-                                  {"label": "Aquarius", "value": "aquarius"},
-                                  {"label": "Pisces", "value": "pisces"},
-                                ]),
+                              title: "Zodiac Sign",
+                              initialSelection:
+                                  preferencesProvider.preferences?.zodiacSigns,
+                              options: [
+                                {"label": "Aries", "value": "aries"},
+                                {"label": "Taurus", "value": "taurus"},
+                                {"label": "Gemini", "value": "gemini"},
+                                {"label": "Cancer", "value": "cancer"},
+                                {"label": "Leo", "value": "leo"},
+                                {"label": "Virgo", "value": "virgo"},
+                                {"label": "Libra", "value": "libra"},
+                                {"label": "Scorpio", "value": "scorpio"},
+                                {
+                                  "label": "Sagittarius",
+                                  "value": "sagittarius"
+                                },
+                                {"label": "Capricorn", "value": "capricorn"},
+                                {"label": "Aquarius", "value": "aquarius"},
+                                {"label": "Pisces", "value": "pisces"},
+                              ],
+                              onChanged: (newZodiac) {
+                                setState(() {
+                                  preferencesProvider.preferences?.zodiacSigns =
+                                      newZodiac;
+                                });
+                                updatedPreferenceField(
+                                    'zodiacSigns', newZodiac);
+                              },
+                            ),
                             SelectionWidget(
                                 title: "Education",
                                 initialSelection:
@@ -331,37 +362,71 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                                   },
                                   {"label": "PhD", "value": "phd"},
                                   {"label": "Other", "value": "other"},
-                                ]),
+                                ],onChanged: (newEducation) {
+                                setState(() {
+                                  preferencesProvider
+                                      .preferences?.education = newEducation;
+                                });
+                                updatedPreferenceField(
+                                    'education', newEducation);
+                              },),
                             SelectionWidget(
-                                title: "Future Family",
-                                initialSelection: preferencesProvider
-                                    .preferences?.futureFamily,
-                                options: [
-                                  {"label": "Single", "value": "single"},
-                                  {"label": "Married", "value": "married"},
-                                  {"label": "With Kids", "value": "with_kids"},
-                                  {"label": "Other", "value": "other"},
-                                ]),
+                              title: "Future Family",
+                              initialSelection:
+                                  preferencesProvider.preferences?.futureFamily,
+                              options: [
+                                {"label": "Single", "value": "single"},
+                                {"label": "Married", "value": "married"},
+                                {"label": "With Kids", "value": "with_kids"},
+                                {"label": "Other", "value": "other"},
+                              ],
+                              onChanged: (newFamily) {
+                                setState(() {
+                                  preferencesProvider
+                                      .preferences?.futureFamily = newFamily;
+                                });
+                                updatedPreferenceField(
+                                    'futureFamily', newFamily);
+                              },
+                            ),
                             SelectionWidget(
-                                title: "Personality Style",
-                                initialSelection: preferencesProvider
-                                    .preferences?.personalityTypes,
-                                options: [
-                                  {"label": "Introvert", "value": "introvert"},
-                                  {"label": "Extrovert", "value": "extrovert"},
-                                  {"label": "Ambivert", "value": "ambivert"},
-                                  {"label": "Other", "value": "other"},
-                                ]),
+                              title: "Personality Style",
+                              initialSelection: preferencesProvider
+                                  .preferences?.personalityTypes,
+                              options: [
+                                {"label": "Introvert", "value": "introvert"},
+                                {"label": "Extrovert", "value": "extrovert"},
+                                {"label": "Ambivert", "value": "ambivert"},
+                                {"label": "Other", "value": "other"},
+                              ],
+                              onChanged: (newPersonality) {
+                                setState(() {
+                                  preferencesProvider.preferences
+                                      ?.personalityTypes = newPersonality;
+                                });
+                                updatedPreferenceField(
+                                    'personalityTypes', newPersonality);
+                              },
+                            ),
                             SelectionWidget(
-                                title: "Communication Style",
-                                initialSelection: preferencesProvider
-                                    .preferences?.communicationStyles,
-                                options: [
-                                  {"label": "Direct", "value": "direct"},
-                                  {"label": "Indirect", "value": "indirect"},
-                                  {"label": "Assertive", "value": "assertive"},
-                                  {"label": "Passive", "value": "passive"},
-                                ])
+                              title: "Communication Style",
+                              initialSelection: preferencesProvider
+                                  .preferences?.communicationStyles,
+                              options: [
+                                {"label": "Direct", "value": "direct"},
+                                {"label": "Indirect", "value": "indirect"},
+                                {"label": "Assertive", "value": "assertive"},
+                                {"label": "Passive", "value": "passive"},
+                              ],
+                              onChanged: (newCommunication) {
+                                setState(() {
+                                  preferencesProvider.preferences
+                                      ?.communicationStyles = newCommunication;
+                                });
+                                updatedPreferenceField(
+                                    'communicationStyles', newCommunication);
+                              },
+                            )
                           ],
                         ),
                       ),
@@ -383,15 +448,24 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                         child: Column(
                           children: [
                             SelectionWidget(
-                                title: "Pet",
-                                initialSelection: preferencesProvider
-                                    .preferences?.petPreferences,
-                                options: [
-                                  {"label": "Dog", "value": "dog"},
-                                  {"label": "Cat", "value": "cat"},
-                                  {"label": "Bird", "value": "bird"},
-                                  {"label": "Fish", "value": "fish"},
-                                ]),
+                              title: "Pet",
+                              initialSelection: preferencesProvider
+                                  .preferences?.petPreferences,
+                              options: [
+                                {"label": "Dog", "value": "dog"},
+                                {"label": "Cat", "value": "cat"},
+                                {"label": "Bird", "value": "bird"},
+                                {"label": "Fish", "value": "fish"},
+                              ],
+                              onChanged: (newPet) {
+                                setState(() {
+                                  preferencesProvider
+                                      .preferences?.petPreferences = newPet;
+                                });
+                                updatedPreferenceField(
+                                    'petPreferences', newPet);
+                              },
+                            ),
                             SelectionWidget(
                               title: "Drinking",
                               initialSelection:
@@ -401,19 +475,34 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                                 {"label": "Social", "value": "social"},
                                 {"label": "Often", "value": "often"},
                               ],
+                              onChanged: (newDrink) {
+                                setState(() {
+                                  preferencesProvider.preferences?.drinking =
+                                      newDrink;
+                                });
+                                updatedPreferenceField('drinking', newDrink);
+                              },
                             ),
                             SelectionWidget(
-                                title: "Smoking",
-                                initialSelection:
-                                    preferencesProvider.preferences?.smoking,
-                                options: [
-                                  {"label": "Never", "value": "never"},
-                                  {
-                                    "label": "Occasionally",
-                                    "value": "occasionally"
-                                  },
-                                  {"label": "Regularly", "value": "regularly"},
-                                ]),
+                              title: "Smoking",
+                              initialSelection:
+                                  preferencesProvider.preferences?.smoking,
+                              options: [
+                                {"label": "Never", "value": "never"},
+                                {
+                                  "label": "Occasionally",
+                                  "value": "occasionally"
+                                },
+                                {"label": "Regularly", "value": "regularly"},
+                              ],
+                              onChanged: (newSmoking) {
+                                setState(() {
+                                  preferencesProvider.preferences?.smoking =
+                                      newSmoking;
+                                });
+                                updatedPreferenceField('smoking', newSmoking);
+                              },
+                            ),
                             SelectionWidget(
                               title: "Exercise",
                               initialSelection:
@@ -423,83 +512,107 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                                 {"label": "Weekly", "value": "weekly"},
                                 {"label": "Daily", "value": "daily"},
                               ],
+                              onChanged: (newExecise) {
+                                setState(() {
+                                  preferencesProvider.preferences?.exercise =
+                                      newExecise;
+                                });
+                                updatedPreferenceField('exercise', newExecise);
+                              },
                             ),
                             SelectionWidget(
-                                title: "Diet",
-                                initialSelection:
-                                    preferencesProvider.preferences?.diet,
-                                options: [
-                                  {"label": "Omnivore", "value": "omnivore"},
-                                  {
-                                    "label": "Vegetarian",
-                                    "value": "vegetarian"
-                                  },
-                                  {"label": "Vegan", "value": "vegan"},
-                                  {
-                                    "label": "Pescatarian",
-                                    "value": "pescatarian"
-                                  },
-                                  {"label": "Keto", "value": "keto"},
-                                  {"label": "Paleo", "value": "paleo"},
-                                  {
-                                    "label": "Gluten-Free",
-                                    "value": "gluten_free"
-                                  },
-                                  {
-                                    "label": "Dairy-Free",
-                                    "value": "dairy_free"
-                                  },
-                                  {"label": "Low-Carb", "value": "low_carb"},
-                                  {
-                                    "label": "High-Protein",
-                                    "value": "high_protein"
-                                  },
-                                ]),
+                              title: "Diet",
+                              initialSelection:
+                                  preferencesProvider.preferences?.diet,
+                              options: [
+                                {"label": "Omnivore", "value": "omnivore"},
+                                {"label": "Vegetarian", "value": "vegetarian"},
+                                {"label": "Vegan", "value": "vegan"},
+                                {
+                                  "label": "Pescatarian",
+                                  "value": "pescatarian"
+                                },
+                                {"label": "Keto", "value": "keto"},
+                                {"label": "Paleo", "value": "paleo"},
+                                {
+                                  "label": "Gluten-Free",
+                                  "value": "gluten_free"
+                                },
+                                {"label": "Dairy-Free", "value": "dairy_free"},
+                                {"label": "Low-Carb", "value": "low_carb"},
+                                {
+                                  "label": "High-Protein",
+                                  "value": "high_protein"
+                                },
+                              ],
+                              onChanged: (newDiet) {
+                                setState(() {
+                                  preferencesProvider.preferences?.diet =
+                                      newDiet;
+                                });
+                                updatedPreferenceField('diet', newDiet);
+                              },
+                            ),
                             SelectionWidget(
-                                title: "Social Media",
-                                initialSelection: preferencesProvider
-                                    .preferences?.socialMedia,
-                                options: [
-                                  {"label": "Facebook", "value": "facebook"},
-                                  {"label": "Instagram", "value": "instagram"},
-                                  {"label": "Twitter/X", "value": "twitter"},
-                                  {"label": "TikTok", "value": "tiktok"},
-                                  {"label": "Snapchat", "value": "snapchat"},
-                                  {"label": "LinkedIn", "value": "linkedin"},
-                                  {"label": "YouTube", "value": "youtube"},
-                                  {"label": "Reddit", "value": "reddit"},
-                                  {"label": "Pinterest", "value": "pinterest"},
-                                  {"label": "Discord", "value": "discord"},
-                                  {"label": "Telegram", "value": "telegram"},
-                                  {"label": "WhatsApp", "value": "whatsapp"},
-                                ]),
+                              title: "Social Media",
+                              initialSelection:
+                                  preferencesProvider.preferences?.socialMedia,
+                              options: [
+                                {"label": "Facebook", "value": "facebook"},
+                                {"label": "Instagram", "value": "instagram"},
+                                {"label": "Twitter/X", "value": "twitter"},
+                                {"label": "TikTok", "value": "tiktok"},
+                                {"label": "Snapchat", "value": "snapchat"},
+                                {"label": "LinkedIn", "value": "linkedin"},
+                                {"label": "YouTube", "value": "youtube"},
+                                {"label": "Reddit", "value": "reddit"},
+                                {"label": "Pinterest", "value": "pinterest"},
+                                {"label": "Discord", "value": "discord"},
+                                {"label": "Telegram", "value": "telegram"},
+                                {"label": "WhatsApp", "value": "whatsapp"},
+                              ],
+                              onChanged: (newSocialMedia) {
+                                setState(() {
+                                  preferencesProvider.preferences?.socialMedia =
+                                      newSocialMedia;
+                                });
+                                updatedPreferenceField(
+                                    'socialMedia', newSocialMedia);
+                              },
+                            ),
                             SelectionWidget(
-                                title: "Sleep Habit",
-                                initialSelection: preferencesProvider
-                                    .preferences?.sleepHabits,
-                                options: [
-                                  {
-                                    "label": "Early Bird",
-                                    "value": "early_bird"
-                                  },
-                                  {"label": "Night Owl", "value": "night_owl"},
-                                  {
-                                    "label": "Biphasic Sleeper",
-                                    "value": "biphasic"
-                                  },
-                                  {
-                                    "label": "Light Sleeper",
-                                    "value": "light_sleeper"
-                                  },
-                                  {
-                                    "label": "Heavy Sleeper",
-                                    "value": "heavy_sleeper"
-                                  },
-                                  {
-                                    "label": "Irregular Sleep",
-                                    "value": "irregular"
-                                  },
-                                ])
+                              title: "Sleep Habit",
+                              initialSelection:
+                                  preferencesProvider.preferences?.sleepHabits,
+                              options: [
+                                {"label": "Early Bird", "value": "early_bird"},
+                                {"label": "Night Owl", "value": "night_owl"},
+                                {
+                                  "label": "Biphasic Sleeper",
+                                  "value": "biphasic"
+                                },
+                                {
+                                  "label": "Light Sleeper",
+                                  "value": "light_sleeper"
+                                },
+                                {
+                                  "label": "Heavy Sleeper",
+                                  "value": "heavy_sleeper"
+                                },
+                                {
+                                  "label": "Irregular Sleep",
+                                  "value": "irregular"
+                                },
+                              ],
+                              onChanged: (newSleepHabit) {
+                                setState(() {
+                                  preferencesProvider.preferences?.sleepHabits =
+                                      newSleepHabit;
+                                });
+                                updatedPreferenceField(
+                                    'sleepHabit', newSleepHabit);
+                              },
+                            )
                           ],
                         ),
                       ),
@@ -521,12 +634,12 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                           initialOrientation: selectedOrientation.isNotEmpty
                               ? selectedOrientation.first
                               : "",
-                          // onChanged: (newType) {
-                          //   setState(() {
-                          //     selectedOrientation = newType;
-                          //   });
-                          //   profileProvider.sexualOrientation = newType;
-                          // }
+                          onChanged: (newType) {
+                            setState(() {
+                              selectedOrientation = [newType];
+                            });
+                           updatedProfileField('sexualOrientation',newType);
+                          }
                         ),
                       ),
                       SizedBox(height: 16),
@@ -544,10 +657,10 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                         child: CityDropdownField(
                             initialCity: selectedCity,
                             onChanged: (newCity) {
-                              // setState(() {
-                              //   selectedCity = newCity;
-                              // });
-                              // profileProvider.location = newCity;
+                              setState(() {
+                                selectedCity = newCity;
+                              });
+                              updatedProfileField("location", newCity);
                             }),
                       ),
                       SizedBox(

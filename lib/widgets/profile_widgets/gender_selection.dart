@@ -23,6 +23,13 @@ class _GenderSelectionState extends State<GenderSelection> {
   ];
   String? selectedGender;
 
+@override
+  void initState() {
+    super.initState();
+    selectedGender = widget.initialGender;
+  }
+
+
  @override
 void didUpdateWidget(covariant GenderSelection oldWidget) {
   super.didUpdateWidget(oldWidget);

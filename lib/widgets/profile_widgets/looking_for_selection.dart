@@ -27,9 +27,16 @@ class _LookingForSelectionState extends State<LookingForSelection> {
   String? selectedLookingFor;
 
   @override
+  void initState() {
+    super.initState();
+    selectedLookingFor = widget.initialSelection;
+  }
+
+  @override
   void didUpdateWidget(covariant LookingForSelection oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.initialSelection != oldWidget.initialSelection) {
+    if (widget.initialSelection != null &&
+        widget.initialSelection != oldWidget.initialSelection) {
       setState(() {
         selectedLookingFor = widget.initialSelection;
       });
@@ -111,7 +118,7 @@ class _LookingForSelectionState extends State<LookingForSelection> {
 
   @override
   Widget build(BuildContext context) {
-    
+    print("Initial: ${widget.initialSelection}");
     String selectedLabel = lookingForOptions.firstWhere(
       (item) => item['value'] == selectedLookingFor,
       orElse: () => {"label": "Select your purpose", "value": "unknown"},
@@ -126,8 +133,7 @@ class _LookingForSelectionState extends State<LookingForSelection> {
             decoration: BoxDecoration(
               color: Colors.white,
               border: Border.all(color: Colors.transparent),
-              borderRadius: BorderRadius.circular(8)
-              ,
+              borderRadius: BorderRadius.circular(8),
             ),
             width: double.infinity,
             child: Row(
