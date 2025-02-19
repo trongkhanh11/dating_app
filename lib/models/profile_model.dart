@@ -43,7 +43,7 @@ class Profile {
       gender: json['gender'],
       bio: json['bio'],
       location: json['location'],
-      files: (json['imageUrls'] as List<dynamic>?)
+      files: (json['files'] as List<dynamic>?)
           ?.map((item) => item as String)
           .toList(),
       createdAt: json['createdAt'],
@@ -101,6 +101,7 @@ class CreateProfileModel {
 
 
 class Preferences {
+  final String? id;
   final String userId;
   List<String> hobbies;
   List<String> lookingFor;
@@ -119,6 +120,7 @@ class Preferences {
   List<String>? sleepHabits;
 
   Preferences({
+    this.id,
     required this.userId,
     required this.hobbies,
     required this.lookingFor,
@@ -140,7 +142,8 @@ class Preferences {
   /// Chuyển đổi từ JSON sang object Preferences
   factory Preferences.fromJson(Map<String, dynamic> json) {
     return Preferences(
-      userId: json['userId'] ?? '',
+      id: json['id'],
+      userId: json['userId'],
       hobbies: List<String>.from(json['hobbies'] ?? []),
       lookingFor: List<String>.from(json['lookingFor'] ?? []),
       languages: json['languages'] != null

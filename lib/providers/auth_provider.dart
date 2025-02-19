@@ -1,5 +1,6 @@
 import 'package:dating_app/models/profile_model.dart';
 import 'package:dating_app/models/user_model.dart';
+import 'package:dating_app/presentation/authentication/login/login_screen.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -99,6 +100,9 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
     }
     // ignore: use_build_context_synchronously
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+    Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+        (route) => false);
   }
 }

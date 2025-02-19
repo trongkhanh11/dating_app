@@ -16,21 +16,26 @@ class InterestsSelection extends StatefulWidget {
 
 class _InterestsSelectionState extends State<InterestsSelection> {
   List<String> interestOptions = [
-    "Gaming",
-    "Music",
     "Sports",
+    "Music",
     "Travel",
-    "Movies",
     "Reading",
-    "Coding",
-    "Cooking"
+    "Gaming",
+    "Cat",
+    "Dog",
+    "Animal",
+    "Cafe",
+    "Food",
+    "Drink",
+    "Smoke"
   ];
   List<String> selectedInterests = [];
 
   @override
   void initState() {
     super.initState();
-    selectedInterests = List.from(widget.interests); // Lấy dữ liệu từ widget
+     print("Initial Interests: ${widget.interests}");
+    selectedInterests = List.from(widget.interests);
   }
 
   void _updateSelectedInterests(List<String> newInterests) {
@@ -161,31 +166,32 @@ class _InterestsSelectionState extends State<InterestsSelection> {
                   // Display filtered list of interests
                   Expanded(
                     child: SingleChildScrollView(
-                      child: Wrap(
-                        spacing: 6.0,
-                        runSpacing: 6.0,
-                        children: filteredInterests.map((interest) {
-                          return ChoiceChip(
-                            label: Text(interest),
-                            padding: EdgeInsets.all(6),
-                            selected: tempSelectedInterests.contains(interest),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                              side: BorderSide(color: Colors.grey),
-                            ),
-                            selectedColor: Colors.redAccent,
-                            showCheckmark: false,
-                            onSelected: (selected) {
-                              setStateBottomSheet(() {
-                                selected
-                                    ? tempSelectedInterests.add(interest)
-                                    : tempSelectedInterests.remove(interest);
-                              });
-                            },
-                          );
-                        }).toList(),
-                      ),
-                    ),
+                        child: Wrap(
+                      spacing: 6.0,
+                      runSpacing: 6.0,
+                      children: filteredInterests.map((interest) {
+                        return ChoiceChip(
+                          label: Text(interest),
+                          padding: EdgeInsets.all(6),
+                          selected: tempSelectedInterests.contains(interest),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                            side: BorderSide(color: Colors.grey),
+                          ),
+                          selectedColor: Colors.redAccent,
+                          showCheckmark: false,
+                          onSelected: (selected) {
+                            setStateBottomSheet(() {
+                              if (selected) {
+                                tempSelectedInterests.add(interest);
+                              } else {
+                                tempSelectedInterests.remove(interest);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    )),
                   ),
                 ],
               ),
@@ -217,22 +223,19 @@ class _InterestsSelectionState extends State<InterestsSelection> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(
-                    selectedInterests.isEmpty
-                        ? "Select your interests..." // Văn bản mặc định khi chưa chọn gì
-                        : selectedInterests
-                            .join(", "), // Hiển thị danh sách dạng Text
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: selectedInterests.isEmpty
-                          ? Colors.grey
-                          : Colors.black,
-                    ),
-                    maxLines: 2,
-                    overflow:
-                        TextOverflow.ellipsis, // Nếu quá dài sẽ có dấu "..."
+                    child: Text(
+                  selectedInterests.isEmpty
+                      ? "Select your interests..."
+                      : selectedInterests.join(", "),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color:
+                        selectedInterests.isEmpty ? Colors.grey : Colors.black,
                   ),
-                ),
+                  maxLines: 2,
+                  overflow:
+                      TextOverflow.ellipsis, // Nếu quá dài sẽ có dấu "..."
+                )),
                 Icon(
                   Icons.arrow_forward_ios,
                   color: Colors.grey,

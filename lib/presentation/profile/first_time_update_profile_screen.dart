@@ -1,5 +1,6 @@
 import 'package:dating_app/models/profile_model.dart';
 import 'package:dating_app/providers/auth_provider.dart';
+import 'package:dating_app/providers/preferences_provider.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/widgets/bottom_bar.dart';
 import 'package:flutter/material.dart';
@@ -116,13 +117,15 @@ class _FirstTimeUpdateProfileScreenState
   void _submitForm() async {
     final profileProvider =
         Provider.of<ProfileProvider>(context, listen: false);
+    final preferencesProvider =
+        Provider.of<PreferencesProvider>(context, listen: false);
     CreateProfileModel createProfileModel = CreateProfileModel(
       userId: widget.userId,
       displayName: displayNameController.text,
       isPublic: isPublic,
       age: int.tryParse(ageController.text) ?? 18,
       gender: selectedGender ?? "Other",
-      sexualOrientation: selectedOrientation,
+      sexualOrientation: ["male"],
       bio: bioController.text,
       // interests: interests,
       location: selectedCity ?? "Unknown",
@@ -137,7 +140,7 @@ class _FirstTimeUpdateProfileScreenState
           userId: widget.userId,
           hobbies: interests,
           lookingFor: selectedLookingFor!);
-      bool preferenceSuccess = await profileProvider.createUserPreferences(
+      bool preferenceSuccess = await preferencesProvider.createUserPreferences(
           createPreferences, context);
       if (preferenceSuccess) {
         debugPrint("User profile created successfully!");
