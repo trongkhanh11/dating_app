@@ -1,6 +1,7 @@
 import 'package:dating_app/presentation/authentication/login/login_screen.dart';
 import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/discovery_provider.dart';
+import 'package:dating_app/providers/preferences_provider.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/themes/theme.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +17,7 @@ void main() {
         ChangeNotifierProvider(create: (context) => AuthProvider()),
         ChangeNotifierProvider(create: (context) => ProfileProvider()),
         ChangeNotifierProvider(create: (context) => DiscoveryProvider()),
+        ChangeNotifierProvider(create: (context) => PreferencesProvider())
       ],
       child: const MyApp(),
     ),
