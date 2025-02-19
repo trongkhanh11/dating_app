@@ -118,7 +118,6 @@ class _LookingForSelectionState extends State<LookingForSelection> {
 
   @override
   Widget build(BuildContext context) {
-    print("Initial: ${widget.initialSelection}");
     String selectedLabel = lookingForOptions.firstWhere(
       (item) => item['value'] == selectedLookingFor,
       orElse: () => {"label": "Select your purpose", "value": "unknown"},

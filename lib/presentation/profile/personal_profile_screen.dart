@@ -55,26 +55,20 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
 
     List<String> fileIds = profileProvider.profile?.files ?? [];
     await profileProvider.getProfilePhotos(fileIds, context);
-    //imagesUrl = profileProvider.images;
     await profileProvider.getUserProfile(userId, context);
     await preferencesProvider.getUserPreferences(userId, context);
     bioController = TextEditingController(text: profileProvider.profile?.bio);
-    //lookingFor = preferencesProvider.preferences!.lookingFor;
     selectedOrientation = profileProvider.profile?.sexualOrientation ?? [];
     selectedGender = profileProvider.profile?.gender;
     selectedCity = profileProvider.profile?.location;
     preferencesId = preferencesProvider.preferences?.id ?? "";
     profileId = profileProvider.profile?.id ?? "";
-    print("profile id ${profileProvider.profile?.id}");
-    print("id ${preferencesProvider.preferences?.id}");
-    print(preferencesProvider.preferences?.lookingFor);
   }
 
   void updatedPreferenceField(String field, dynamic value) {
     final Map<String, dynamic> updatedData = {field: value};
     final preferencesProvider =
         Provider.of<PreferencesProvider>(context, listen: false);
-    print("id update ${preferencesProvider.preferences?.id}");
     preferencesProvider.updateUserPreferences(
         preferencesId, updatedData, context);
   }
@@ -83,7 +77,6 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
     final Map<String, dynamic> updatedData = {field: value};
     final profileProvider =
         Provider.of<ProfileProvider>(context, listen: false);
-    print("id update ${profileProvider.profile?.id}");
     profileProvider.updateUserProfile(profileId, updatedData, context);
   }
 
