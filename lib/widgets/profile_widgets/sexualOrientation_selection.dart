@@ -34,6 +34,13 @@ class _SexualOrientationSelectionState
 
   String? selectedOrientation;
 
+@override
+  void initState() {
+    super.initState();
+    selectedOrientation = widget.initialOrientation;
+  }
+
+
   @override
   void didUpdateWidget(covariant SexualOrientationSelection oldWidget) {
     super.didUpdateWidget(oldWidget);
