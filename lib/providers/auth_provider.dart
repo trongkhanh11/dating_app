@@ -1,4 +1,3 @@
-import 'package:dating_app/models/profile_model.dart';
 import 'package:dating_app/models/user_model.dart';
 import 'package:dating_app/presentation/authentication/login/login_screen.dart';
 import 'package:dating_app/providers/profile_provider.dart';
@@ -12,11 +11,9 @@ class AuthProvider with ChangeNotifier {
   bool isLoggingOut = false;
   bool hasError = false;
   UserModel? _userModel;
-  Profile? _profile;
   String errorMessage = '';
 
   UserModel? get userModel => _userModel;
-  Profile? get profile => _profile;
 
   Future<bool> login(String email, String password) async {
     try {
@@ -85,24 +82,26 @@ class AuthProvider with ChangeNotifier {
     try {
       isLoggingOut = true;
       _userModel = null;
-      _profile = null;
       errorMessage = '';
       notifyListeners();
       // ignore: use_build_context_synchronously
       Provider.of<ProfileProvider>(context, listen: false).clearData();
+
+      // ignore: use_build_context_synchronously
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => LoginScreen()),
+        (route) => false,
+      );
     } catch (e) {
       // ignore: use_build_context_synchronously
       debugPrint('Network error occurred: $e');
     } finally {
+      await Future.delayed(Duration(milliseconds: 500));
       isLoggingOut = false;
       isLoading = false;
       errorMessage = '';
       notifyListeners();
     }
-    // ignore: use_build_context_synchronously
-    Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => LoginScreen()),
-        (route) => false);
   }
 }

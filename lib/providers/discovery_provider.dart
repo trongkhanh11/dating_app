@@ -27,7 +27,7 @@ class DiscoveryProvider with ChangeNotifier {
         token: token,
         param: {
           'ageRange': ageRange,
-          'distanceRange': distanceRange,
+          //'distanceRange': distanceRange,
         },
       );
       if (response.statusCode == 200) {
