@@ -43,7 +43,7 @@ class Profile {
       gender: json['gender'],
       bio: json['bio'],
       location: json['location'],
-      files: (json['imageUrls'] as List<dynamic>?)
+      files: (json['files'] as List<dynamic>?)
           ?.map((item) => item as String)
           .toList(),
       createdAt: json['createdAt'],
@@ -140,7 +140,7 @@ class Preferences {
   /// Chuyển đổi từ JSON sang object Preferences
   factory Preferences.fromJson(Map<String, dynamic> json) {
     return Preferences(
-      userId: json['userId'] ?? '',
+      userId: json['userId'],
       hobbies: List<String>.from(json['hobbies'] ?? []),
       lookingFor: List<String>.from(json['lookingFor'] ?? []),
       languages: json['languages'] != null

@@ -111,11 +111,11 @@ class _LookingForSelectionState extends State<LookingForSelection> {
 
   @override
   Widget build(BuildContext context) {
+    
     String selectedLabel = lookingForOptions.firstWhere(
       (item) => item['value'] == selectedLookingFor,
       orElse: () => {"label": "Select your purpose", "value": "unknown"},
     )['label']!;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
