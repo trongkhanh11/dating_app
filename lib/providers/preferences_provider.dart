@@ -46,8 +46,36 @@ class PreferencesProvider extends ChangeNotifier {
     }
   }
 
-  //Future<bool> updateUserPreferences()
-
+  Future<bool> updateUserPreferences(String id,
+      Map<String, dynamic> updatedField, BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final token = authProvider.userModel?.token;
+    try {
+      isLoading = true;
+      errorMessage = '';
+      notifyListeners();
+      final response = await APIService.instance.request(
+        '/users/preferences/$id',
+        DioMethod.patch,
+        param: updatedField,
+        contentType: 'application/json',
+        token: token,
+      );
+      if (response.statusCode == 200) {
+        debugPrint('User Preferences Updated successfully');
+        return true;
+      } else {
+        debugPrint('API call failed: ${response.statusMessage}');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('Network error occurred: $e');
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
 
   Future<bool> getUserPreferences(String userId, BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);

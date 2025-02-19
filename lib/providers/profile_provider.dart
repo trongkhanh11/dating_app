@@ -52,6 +52,38 @@ class ProfileProvider with ChangeNotifier {
     }
   }
 
+  Future<bool> updateUserProfile(String id,
+      Map<String, dynamic> updatedField, BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final token = authProvider.userModel?.token;
+    try {
+      isLoading = true;
+      errorMessage = '';
+      notifyListeners();
+      final response = await APIService.instance.request(
+        '/profiles/$id',
+        DioMethod.patch,
+        param: updatedField,
+        contentType: 'application/json',
+        token: token,
+      );
+      if (response.statusCode == 200) {
+        debugPrint('User Profile Updated successfully');
+        return true;
+      } else {
+        debugPrint('API call failed: ${response.statusMessage}');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('Network error occurred: $e');
+      return false;
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+
   Future<bool> getUserProfile(String userId, BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final token = authProvider.userModel?.token;
