@@ -1,4 +1,5 @@
 import 'package:dating_app/presentation/home/filter_screen.dart';
+import 'package:dating_app/presentation/loveScreen/profile_screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -103,7 +104,7 @@ class _LoveScreenState extends State<LoveScreen> {
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: AppBar(
             title: Text(
-              "Dating App",
+              "Love List",
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -126,7 +127,7 @@ class _LoveScreenState extends State<LoveScreen> {
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Colors.pink.shade200, Colors.purple.shade400],
+            colors: [Colors.redAccent.shade100, Colors.purple.shade400],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -212,22 +213,32 @@ class LoveCard extends StatelessWidget {
             color: Colors.white,
             borderRadius: BorderRadius.circular(15),
           ),
-          child: ListTile(
-            contentPadding: EdgeInsets.all(15),
-            leading: CircleAvatar(
-              backgroundImage: NetworkImage(user.imageUrl),
-              radius: 30,
+          child: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ProfileScreen(user: user),
+                ),
+              );
+            },
+            child: ListTile(
+              contentPadding: EdgeInsets.all(15),
+              leading: CircleAvatar(
+                backgroundImage: NetworkImage(user.imageUrl),
+                radius: 30,
+              ),
+              title: Text(
+                user.name,
+                style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87),
+              ),
+              subtitle: Text("${user.age} tuổi • ${user.distance} km",
+                  style: TextStyle(color: Colors.grey[700])),
+              trailing: Icon(Icons.favorite, color: Colors.red, size: 28),
             ),
-            title: Text(
-              user.name,
-              style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87),
-            ),
-            subtitle: Text("${user.age} tuổi • ${user.distance} km",
-                style: TextStyle(color: Colors.grey[700])),
-            trailing: Icon(Icons.favorite, color: Colors.red, size: 28),
           ),
         ),
       ),
