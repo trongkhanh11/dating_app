@@ -12,7 +12,7 @@ class InteractionProvider with ChangeNotifier {
 
   Interaction? get interaction => _interaction;
 
-  Future<void> interact(Interaction interaction, BuildContext context) async {
+  Future<void> interact(InteractModel interaction, BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final token = authProvider.userModel?.token;
 
@@ -29,15 +29,47 @@ class InteractionProvider with ChangeNotifier {
         param: interaction.toJson(),
       );
 
-      print(response.data);
       if (response.statusCode == 200) {
-        //_interaction = Interaction.fromJson(response.data);
+        _interaction = Interaction.fromJson(response.data);
         notifyListeners();
       } else {
         debugPrint('API call failed: ${response.statusMessage}');
       }
     } catch (e) {
       debugPrint('Network error occurred: $e');
+    } finally {
+      isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> checkMatch(
+      String userId1, String userId2, BuildContext context) async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final token = authProvider.userModel?.token;
+
+    try {
+      isLoading = true;
+      errorMessage = ''; // Clear previous errors
+      notifyListeners();
+
+      final response = await APIService.instance.request(
+        '/interactions/match/$userId1/$userId2', // enter the endpoint for required API call
+        DioMethod.post,
+        contentType: 'application/json',
+        token: token,
+      );
+
+      if (response.statusCode == 200) {
+        notifyListeners();
+        return response.data;
+      } else {
+        debugPrint('API call failed: ${response.statusMessage}');
+        return false;
+      }
+    } catch (e) {
+      debugPrint('Network error occurred: $e');
+      return false;
     } finally {
       isLoading = false;
       notifyListeners();

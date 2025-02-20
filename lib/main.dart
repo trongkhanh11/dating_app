@@ -2,6 +2,7 @@ import 'package:dating_app/presentation/authentication/login/login_screen.dart';
 import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/discovery_provider.dart';
 import 'package:dating_app/providers/interaction_provider.dart';
+import 'package:dating_app/providers/match_provider.dart';
 import 'package:dating_app/providers/preferences_provider.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/themes/theme.dart';
@@ -19,7 +20,8 @@ void main() {
         ChangeNotifierProvider(create: (context) => ProfileProvider()),
         ChangeNotifierProvider(create: (context) => DiscoveryProvider()),
         ChangeNotifierProvider(create: (context) => PreferencesProvider()),
-        ChangeNotifierProvider(create: (context) => InteractionProvider())
+        ChangeNotifierProvider(create: (context) => InteractionProvider()),
+        ChangeNotifierProvider(create: (context) => MatchProvider())
       ],
       child: const MyApp(),
     ),

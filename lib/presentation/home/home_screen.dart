@@ -4,6 +4,7 @@ import 'package:dating_app/presentation/home/filter_screen.dart';
 import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/discovery_provider.dart';
 import 'package:dating_app/providers/interaction_provider.dart';
+import 'package:dating_app/providers/match_provider.dart';
 import 'package:dating_app/providers/preferences_provider.dart';
 import 'package:dating_app/themes/theme.dart';
 import 'package:dating_app/widgets/custom_action_button.dart';
@@ -49,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final preferencesProvider =
         Provider.of<PreferencesProvider>(context, listen: false);
     if (user.id.isNotEmpty && !interests.containsKey(index)) {
-      await preferencesProvider.getUserPreferences(user.id, context);
+      await preferencesProvider.getUserPreferences(user.user.id, context);
       List<String> hobbies = preferencesProvider.preferences?.hobbies ?? [];
       if (mounted) {
         setState(() {
@@ -114,25 +115,30 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  bool onSwipe(int prev, int? curr, CardSwiperDirection direction) {
+  Future<bool> onSwipe(
+      int prev, int? curr, CardSwiperDirection direction) async {
     final interactionProvider =
         Provider.of<InteractionProvider>(context, listen: false);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final currentUserId = authProvider.userModel?.user.id;
+
     if (direction == CardSwiperDirection.left) {
-      Interaction interaction = Interaction(
+      InteractModel interaction = InteractModel(
         senderId: currentUserId!,
         receiverId: filteredUsers[prev].user.id,
         type: "DISLIKE",
       );
-      interactionProvider.interact(interaction, context);
+      await interactionProvider.interact(interaction, context);
     } else if (direction == CardSwiperDirection.right) {
-      Interaction interaction = Interaction(
+      InteractModel interaction = InteractModel(
         senderId: currentUserId!,
         receiverId: filteredUsers[prev].user.id,
         type: "LIKE",
       );
-      interactionProvider.interact(interaction, context);
+      await interactionProvider.interact(interaction, context);
+      final matchProvider = Provider.of<MatchProvider>(context, listen: false);
+      await matchProvider.match(
+          interaction.senderId, interaction.receiverId, context);
     } else {
       return false;
     }
@@ -203,10 +209,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           String imageUrl = "";
                           double rotationAngle = 0;
 
-                          if (absV > absH && vThreshold < 0) {
-                            label = "SUPER LIKE";
-                            imageUrl = "assets/images/super_like.png";
-                          } else if (hThreshold < 0) {
+                          if (hThreshold < 0) {
                             label = "LIKE";
                             imageUrl = "assets/images/like.png";
                             rotationAngle = 0.3;

@@ -1,5 +1,8 @@
 import 'package:dating_app/models/user_model.dart';
 import 'package:dating_app/presentation/authentication/login/login_screen.dart';
+import 'package:dating_app/providers/discovery_provider.dart';
+import 'package:dating_app/providers/interaction_provider.dart';
+import 'package:dating_app/providers/preferences_provider.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -86,6 +89,9 @@ class AuthProvider with ChangeNotifier {
       notifyListeners();
       // ignore: use_build_context_synchronously
       Provider.of<ProfileProvider>(context, listen: false).clearData();
+      Provider.of<DiscoveryProvider>(context, listen: false).clearData();
+      Provider.of<InteractionProvider>(context, listen: false).clearData();
+      Provider.of<PreferencesProvider>(context, listen: false).clearData();
 
       // ignore: use_build_context_synchronously
       Navigator.pushAndRemoveUntil(
