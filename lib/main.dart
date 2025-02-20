@@ -19,7 +19,7 @@ void main() {
         ChangeNotifierProvider(create: (context) => ProfileProvider()),
         ChangeNotifierProvider(create: (context) => DiscoveryProvider()),
         ChangeNotifierProvider(create: (context) => PreferencesProvider()),
-        ChangeNotifierProvider(create: (context) => InteractionProvider())
+        ChangeNotifierProvider(create: (context) => InteractionProvider()),
       ],
       child: const MyApp(),
     ),
