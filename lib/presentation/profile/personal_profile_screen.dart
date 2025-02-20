@@ -54,12 +54,10 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
     final userId = authProvider.userModel?.user.id ?? "";
 
     List<String> fileIds = profileProvider.profile?.files ?? [];
-    await profileProvider.getProfilePhotos(fileIds, context);
-    //imagesUrl = profileProvider.images;
+    await profileProvider.getProfilePhotos(fileIds, context, myImages: true);
     await profileProvider.getUserProfile(userId, context);
     await preferencesProvider.getUserPreferences(userId, context);
     bioController = TextEditingController(text: profileProvider.profile?.bio);
-    //lookingFor = preferencesProvider.preferences!.lookingFor;
     selectedOrientation = profileProvider.profile?.sexualOrientation ?? [];
     selectedGender = profileProvider.profile?.gender;
     selectedCity = profileProvider.profile?.location;
@@ -112,8 +110,8 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                         backgroundColor: Theme.of(context).colorScheme.primary,
                         child: CircleAvatar(
                           radius: 50,
-                          backgroundImage:
-                              NetworkImage(profileProvider.images!.first),
+                          backgroundImage: NetworkImage(
+                              profileProvider.myImages?.first ?? ""),
                         ),
                       ),
                       SizedBox(height: 16),
@@ -148,7 +146,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                       Container(
                           padding: EdgeInsets.all(8),
                           child: MultiImagePicker(
-                            imageUrls: profileProvider.images,
+                            imageUrls: profileProvider.myImages,
                           )),
                       SizedBox(height: 16),
                       //Bio
