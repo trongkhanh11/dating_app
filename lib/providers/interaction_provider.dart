@@ -8,9 +8,11 @@ class InteractionProvider with ChangeNotifier {
   bool isLoading = false;
   bool hasError = false;
   Interaction? _interaction;
+  InteractionLike? _interactionLike;
   String errorMessage = '';
 
   Interaction? get interaction => _interaction;
+  InteractionLike? get interactionLike => _interactionLike;
 
   Future<void> interact(InteractModel interaction, BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -43,8 +45,7 @@ class InteractionProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> checkMatch(
-      String userId1, String userId2, BuildContext context) async {
+  Future<void> getRecievedLikes(String userId, BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final token = authProvider.userModel?.token;
 
@@ -54,22 +55,21 @@ class InteractionProvider with ChangeNotifier {
       notifyListeners();
 
       final response = await APIService.instance.request(
-        '/interactions/match/$userId1/$userId2', // enter the endpoint for required API call
-        DioMethod.post,
+        '/interactions/received-likes/$userId', // enter the endpoint for required API call
+        DioMethod.get,
         contentType: 'application/json',
         token: token,
       );
 
       if (response.statusCode == 200) {
+        _interactionLike = InteractionLike.fromJson(response.data);
+
+        print('✅ Total Likes: ${_interactionLike?.totalItems}');
+        print('✅ Parsed Data: ${_interactionLike?.data}');
         notifyListeners();
-        return response.data;
-      } else {
-        debugPrint('API call failed: ${response.statusMessage}');
-        return false;
       }
     } catch (e) {
       debugPrint('Network error occurred: $e');
-      return false;
     } finally {
       isLoading = false;
       notifyListeners();
