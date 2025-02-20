@@ -1,4 +1,5 @@
 import 'package:dating_app/presentation/loveScreen/love_screen.dart';
+import 'package:dating_app/presentation/messenger/messenger_screen.dart';
 import 'package:dating_app/presentation/profile/personal_profile_screen.dart';
 import 'package:dating_app/presentation/home/home_screen.dart';
 import 'package:dating_app/themes/theme.dart';
@@ -29,7 +30,7 @@ class _BottomBarState extends State<BottomBar> {
     final List<Widget> widgetOptions = [
       const HomeScreen(),
       const LoveScreen(),
-      const Text("Chat"),
+      const MessengerScreen(),
       const PersonalProfileScreen(),
     ];
     return Scaffold(

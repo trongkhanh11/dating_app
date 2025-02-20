@@ -52,10 +52,9 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
         Provider.of<PreferencesProvider>(context, listen: false);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final userId = authProvider.userModel?.user.id ?? "";
-
+    await profileProvider.getUserProfile(userId, context);
     List<String> fileIds = profileProvider.profile?.files ?? [];
     await profileProvider.getProfilePhotos(fileIds, context, myImages: true);
-    await profileProvider.getUserProfile(userId, context);
     await preferencesProvider.getUserPreferences(userId, context);
     bioController = TextEditingController(text: profileProvider.profile?.bio);
     selectedOrientation = profileProvider.profile?.sexualOrientation ?? [];

@@ -91,6 +91,7 @@ class PreferencesProvider extends ChangeNotifier {
           DioMethod.get,
           contentType: 'application/json',
           token: token);
+
       if (response.statusCode == 200) {
         _preferences = Preferences.fromJson(response.data);
         notifyListeners();
@@ -106,5 +107,11 @@ class PreferencesProvider extends ChangeNotifier {
       isLoading = false;
       notifyListeners();
     }
+  }
+
+  void clearData() {
+    isLoading = false;
+    _preferences = null;
+    notifyListeners();
   }
 }

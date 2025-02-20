@@ -159,7 +159,6 @@ class ProfileProvider with ChangeNotifier {
       errorMessage = ''; // Clear previous errors
       notifyListeners();
 
-      // Duyệt qua danh sách ảnh đã chọn (_images)
       List<MultipartFile> imageFiles = await Future.wait(
         images.where((image) => image != null).map(
               (image) => MultipartFile.fromFile(image!.path,
@@ -185,9 +184,7 @@ class ProfileProvider with ChangeNotifier {
       }
     } catch (e) {
       errorMessage = "Lỗi: ${e.toString()}";
-
       debugPrint('Network error occurred: $e');
-      return null;
     } finally {
       isLoading = false;
       notifyListeners();

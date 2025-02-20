@@ -14,7 +14,7 @@ class InteractionProvider with ChangeNotifier {
   Interaction? get interaction => _interaction;
   InteractionLike? get interactionLike => _interactionLike;
 
-  Future<void> interact(Interaction interaction, BuildContext context) async {
+  Future<void> interact(InteractModel interaction, BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final token = authProvider.userModel?.token;
 
@@ -31,9 +31,8 @@ class InteractionProvider with ChangeNotifier {
         param: interaction.toJson(),
       );
 
-      print(response.data);
       if (response.statusCode == 200) {
-        //_interaction = Interaction.fromJson(response.data);
+        _interaction = Interaction.fromJson(response.data);
         notifyListeners();
       } else {
         debugPrint('API call failed: ${response.statusMessage}');
