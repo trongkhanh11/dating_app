@@ -1,7 +1,10 @@
+import 'package:dating_app/models/interaction_model.dart';
 import 'package:dating_app/models/profile_model.dart';
 import 'package:dating_app/presentation/home/filter_screen.dart';
+import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/discovery_provider.dart';
-import 'package:dating_app/providers/profile_provider.dart';
+import 'package:dating_app/providers/interaction_provider.dart';
+import 'package:dating_app/providers/preferences_provider.dart';
 import 'package:dating_app/themes/theme.dart';
 import 'package:dating_app/widgets/custom_action_button.dart';
 import 'package:dating_app/widgets/photo_progress_indicator.dart';
@@ -30,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
   double maxDistance = 50;
 
   Map<int, int> photoIndexes = {};
-  Map<int, List> userPhotos = {};
+  Map<int, List<String>> interests = {};
 
   @override
   void initState() {
@@ -42,17 +45,17 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _fetchProfilePhotos(int index, Profile user) async {
-    final profileProvider =
-        Provider.of<ProfileProvider>(context, listen: false);
-    if (user.files != null &&
-        user.files!.isNotEmpty &&
-        !userPhotos.containsKey(index)) {
-      await profileProvider.getProfilePhotos(user.files!, context);
-      List photos = profileProvider.images ?? [];
-      setState(() {
-        userPhotos[index] = photos;
-      });
+  Future<void> _fetchInterests(int index, Profile user) async {
+    final preferencesProvider =
+        Provider.of<PreferencesProvider>(context, listen: false);
+    if (user.id.isNotEmpty && !interests.containsKey(index)) {
+      await preferencesProvider.getUserPreferences(user.id, context);
+      List<String> hobbies = preferencesProvider.preferences?.hobbies ?? [];
+      if (mounted) {
+        setState(() {
+          interests[index] = hobbies;
+        });
+      }
     }
   }
 
@@ -62,8 +65,9 @@ class _HomeScreenState extends State<HomeScreen> {
         photoIndexes[index] = 0;
       }
       int currentIndex = photoIndexes[index]!;
-      int maxIndex =
-          userPhotos[index] != null ? userPhotos[index]!.length - 1 : 0;
+      int maxIndex = filteredUsers[index].files != null
+          ? filteredUsers[index].files!.length - 1
+          : 0;
       int newIndex = (currentIndex + change).clamp(0, maxIndex);
 
       if (newIndex != currentIndex) {
@@ -84,7 +88,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     });
     for (int i = 0; i < filteredUsers.length; i++) {
-      _fetchProfilePhotos(i, filteredUsers[i]);
+      _fetchInterests(i, filteredUsers[i]);
     }
     photoIndexes.clear();
   }
@@ -110,8 +114,28 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  bool onSwipe(int prev, int? curr, CardSwiperDirection dir) {
-    debugPrint('Card $prev swiped ${dir.name}, now $curr is on top');
+  bool onSwipe(int prev, int? curr, CardSwiperDirection direction) {
+    final interactionProvider =
+        Provider.of<InteractionProvider>(context, listen: false);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final currentUserId = authProvider.userModel?.user.id;
+    if (direction == CardSwiperDirection.left) {
+      Interaction interaction = Interaction(
+        senderId: currentUserId!,
+        receiverId: filteredUsers[prev].user.id,
+        type: "DISLIKE",
+      );
+      interactionProvider.interact(interaction, context);
+    } else if (direction == CardSwiperDirection.right) {
+      Interaction interaction = Interaction(
+        senderId: currentUserId!,
+        receiverId: filteredUsers[prev].user.id,
+        type: "LIKE",
+      );
+      interactionProvider.interact(interaction, context);
+    } else {
+      return false;
+    }
     setState(() {
       photoIndexes = {};
     });
@@ -161,173 +185,167 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Stack(
               children: [
                 filteredUsers.isNotEmpty
-                    ? Consumer<ProfileProvider>(
-                        builder: (context, profileProvider, child) {
-                        return CardSwiper(
-                          controller: controller,
-                          cardsCount: filteredUsers.length,
-                          onSwipe: onSwipe,
-                          padding: EdgeInsets.zero,
-                          numberOfCardsDisplayed: 1,
-                          backCardOffset: Offset.zero,
-                          cardBuilder:
-                              (context, index, hThreshold, vThreshold) {
-                            final user = filteredUsers[index];
-                            int currentPhotoIndex = photoIndexes[index] ?? 0;
+                    ? CardSwiper(
+                        controller: controller,
+                        cardsCount: filteredUsers.length,
+                        onSwipe: onSwipe,
+                        padding: EdgeInsets.zero,
+                        numberOfCardsDisplayed: 1,
+                        backCardOffset: Offset.zero,
+                        cardBuilder: (context, index, hThreshold, vThreshold) {
+                          final user = filteredUsers[index];
+                          int currentPhotoIndex = photoIndexes[index] ?? 0;
 
-                            final absH = hThreshold.abs();
-                            final absV = vThreshold.abs();
+                          final absH = hThreshold.abs();
+                          final absV = vThreshold.abs();
 
-                            String? label;
-                            String imageUrl = "";
-                            double rotationAngle = 0;
+                          String? label;
+                          String imageUrl = "";
+                          double rotationAngle = 0;
 
-                            if (absV > absH && vThreshold < 0) {
-                              label = "SUPER LIKE";
-                              imageUrl = "assets/images/super_like.png";
-                            } else if (hThreshold < 0) {
-                              label = "LIKE";
-                              imageUrl = "assets/images/like.png";
-                              rotationAngle = 0.3;
-                            } else if (hThreshold > 0) {
-                              label = "NOPE";
-                              imageUrl = "assets/images/nope.png";
-                              rotationAngle = -0.3;
-                            }
+                          if (absV > absH && vThreshold < 0) {
+                            label = "SUPER LIKE";
+                            imageUrl = "assets/images/super_like.png";
+                          } else if (hThreshold < 0) {
+                            label = "LIKE";
+                            imageUrl = "assets/images/like.png";
+                            rotationAngle = 0.3;
+                          } else if (hThreshold > 0) {
+                            label = "NOPE";
+                            imageUrl = "assets/images/nope.png";
+                            rotationAngle = -0.3;
+                          }
 
-                            return SingleChildScrollView(
-                              controller: scrollController,
-                              child: Container(
-                                margin: EdgeInsets.symmetric(horizontal: 5),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    SizedBox(
-                                      height:
-                                          MediaQuery.of(context).size.height -
-                                              180,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.vertical(
-                                          top: Radius.circular(16),
-                                          bottom: Radius.circular(16),
-                                        ),
-                                        child: Stack(
-                                          fit: StackFit.expand,
-                                          children: [
-                                            GestureDetector(
-                                              onTapUp: (details) async {
-                                                double screenWidth =
-                                                    MediaQuery.of(context)
-                                                        .size
-                                                        .width;
-                                                double tapPosition =
-                                                    details.localPosition.dx;
+                          return SingleChildScrollView(
+                            controller: scrollController,
+                            child: Container(
+                              margin: EdgeInsets.symmetric(horizontal: 5),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  SizedBox(
+                                    height: MediaQuery.of(context).size.height -
+                                        180,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.vertical(
+                                        top: Radius.circular(16),
+                                        bottom: Radius.circular(16),
+                                      ),
+                                      child: Stack(
+                                        fit: StackFit.expand,
+                                        children: [
+                                          GestureDetector(
+                                            onTapUp: (details) async {
+                                              double screenWidth =
+                                                  MediaQuery.of(context)
+                                                      .size
+                                                      .width;
+                                              double tapPosition =
+                                                  details.localPosition.dx;
 
-                                                if (tapPosition <
-                                                    screenWidth / 2) {
-                                                  _changePhoto(index, -1);
-                                                } else {
-                                                  _changePhoto(index, 1);
-                                                }
-                                              },
-                                              child: userPhotos
-                                                          .containsKey(index) &&
-                                                      userPhotos[index]!
-                                                          .isNotEmpty
-                                                  ? Image.network(
-                                                      userPhotos[index]![
-                                                          currentPhotoIndex],
-                                                      fit: BoxFit.cover,
-                                                    )
-                                                  : Image.asset(
-                                                      'assets/images/placeholder.png',
-                                                      fit: BoxFit.cover),
-                                            ),
-                                            _buildUserInfo(user),
-                                            if (label != null)
-                                              Positioned(
-                                                top: label == "SUPER LIKE"
-                                                    ? null
-                                                    : 10,
-                                                bottom: label == "SUPER LIKE"
-                                                    ? 20
-                                                    : null,
-                                                left: (label == "NOPE" ||
-                                                        label == "SUPER LIKE")
-                                                    ? 10
-                                                    : null,
-                                                right: (label == "LIKE" ||
-                                                        label == "SUPER LIKE")
-                                                    ? 10
-                                                    : null,
-                                                child: Opacity(
-                                                  opacity:
-                                                      ((label == "SUPER LIKE"
-                                                                  ? absV
-                                                                  : absH) *
-                                                              2.0)
-                                                          .clamp(0.0, 1.0),
-                                                  child: Transform.rotate(
-                                                    angle: rotationAngle,
-                                                    child: Image.asset(
-                                                      imageUrl,
-                                                      width:
-                                                          label == "SUPER LIKE"
-                                                              ? 200
-                                                              : 140,
-                                                      height:
-                                                          label == "SUPER LIKE"
-                                                              ? 200
-                                                              : 140,
-                                                    ),
+                                              if (tapPosition <
+                                                  screenWidth / 2) {
+                                                _changePhoto(index, -1);
+                                              } else {
+                                                _changePhoto(index, 1);
+                                              }
+                                            },
+                                            child: filteredUsers[index].files !=
+                                                        null &&
+                                                    filteredUsers[index]
+                                                        .files!
+                                                        .isNotEmpty
+                                                ? Image.network(
+                                                    filteredUsers[index].files![
+                                                        currentPhotoIndex],
+                                                    fit: BoxFit.cover,
+                                                  )
+                                                : Image.asset(
+                                                    'assets/images/placeholder.png',
+                                                    fit: BoxFit.cover),
+                                          ),
+                                          _buildUserInfo(
+                                              user, interests[index]),
+                                          if (label != null)
+                                            Positioned(
+                                              top: label == "SUPER LIKE"
+                                                  ? null
+                                                  : 10,
+                                              bottom: label == "SUPER LIKE"
+                                                  ? 20
+                                                  : null,
+                                              left: (label == "NOPE" ||
+                                                      label == "SUPER LIKE")
+                                                  ? 10
+                                                  : null,
+                                              right: (label == "LIKE" ||
+                                                      label == "SUPER LIKE")
+                                                  ? 10
+                                                  : null,
+                                              child: Opacity(
+                                                opacity: ((label == "SUPER LIKE"
+                                                            ? absV
+                                                            : absH) *
+                                                        2.0)
+                                                    .clamp(0.0, 1.0),
+                                                child: Transform.rotate(
+                                                  angle: rotationAngle,
+                                                  child: Image.asset(
+                                                    imageUrl,
+                                                    width: label == "SUPER LIKE"
+                                                        ? 200
+                                                        : 140,
+                                                    height:
+                                                        label == "SUPER LIKE"
+                                                            ? 200
+                                                            : 140,
                                                   ),
                                                 ),
                                               ),
-                                            PhotoProgressIndicator(
-                                              index: index,
-                                              photoIndexes: photoIndexes,
-                                              filteredUsers: filteredUsers,
                                             ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    Container(
-                                      margin:
-                                          EdgeInsets.symmetric(vertical: 30),
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 20),
-                                      decoration:
-                                          BoxDecoration(color: Colors.white),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "\"Adventurer at heart, tech enthusiast by day. Love exploring new places, good coffee, and deep conversations. Let’s make memories one swipe at a time!\"",
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500,
-                                            ),
+                                          PhotoProgressIndicator(
+                                            index: index,
+                                            photoIndexes: photoIndexes,
+                                            filteredUsers: filteredUsers,
                                           ),
-                                          const SizedBox(height: 30),
-                                          //_buildInterests(user['hobbies']),
                                         ],
                                       ),
                                     ),
-                                    _buildBottomButtons(),
-                                  ],
-                                ),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.symmetric(vertical: 30),
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 20),
+                                    decoration:
+                                        BoxDecoration(color: Colors.white),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "\"${filteredUsers[index].bio}\"",
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 30),
+                                        _buildInterests(interests[index]),
+                                      ],
+                                    ),
+                                  ),
+                                  _buildBottomButtons(),
+                                ],
                               ),
-                            );
-                          },
-                        );
-                      })
+                            ),
+                          );
+                        },
+                      )
                     : Center(child: CircularProgressIndicator()),
               ],
             ),
@@ -337,7 +355,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildUserInfo(Profile user) {
+  Widget _buildUserInfo(Profile user, List<String>? interest) {
     return Align(
       alignment: Alignment.bottomLeft,
       child: Container(
@@ -394,15 +412,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               const SizedBox(height: 8),
-              Row(
-                children: [
-                  Icon(
-                    CupertinoIcons.square_favorites_alt,
-                    color: Colors.white70,
-                  ),
-                  SizedBox(width: 10),
-                ],
-              ),
+              interest != null
+                  ? Row(
+                      children: [
+                        Icon(
+                          CupertinoIcons.square_favorites_alt,
+                          color: Colors.white70,
+                        ),
+                        SizedBox(width: 10),
+                        Text(
+                          interest.join(', '),
+                          style: TextStyle(fontSize: 16, color: Colors.white70),
+                        ),
+                      ],
+                    )
+                  : SizedBox(),
             ]),
       ),
     );
@@ -436,48 +460,50 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildInterests(List<String> interests) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          "My Interests",
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: interests.map((interest) {
-            return Chip(
-              label: Text(
-                interest,
+  Widget _buildInterests(List<String>? interests) {
+    return interests != null
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "My Interests",
                 style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.grey.shade800,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
                 ),
               ),
-              backgroundColor: Colors.white,
-              avatar: Icon(
-                Icons.favorite,
-                size: 18,
+              const SizedBox(height: 10),
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: interests.map((interest) {
+                  return Chip(
+                    label: Text(
+                      interest,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.grey.shade800,
+                      ),
+                    ),
+                    backgroundColor: Colors.white,
+                    avatar: Icon(
+                      Icons.favorite,
+                      size: 18,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                      side: BorderSide(
+                        color: Colors.grey.shade300,
+                      ),
+                    ),
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  );
+                }).toList(),
               ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
-                side: BorderSide(
-                  color: Colors.grey.shade300,
-                ),
-              ),
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            );
-          }).toList(),
-        ),
-      ],
-    );
+            ],
+          )
+        : SizedBox();
   }
 }

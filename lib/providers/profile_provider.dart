@@ -13,10 +13,12 @@ class ProfileProvider with ChangeNotifier {
   bool hasError = false;
   Profile? _profile;
   List? _images;
+  List? _myImages;
   String errorMessage = '';
 
   Profile? get profile => _profile;
   List? get images => _images;
+  List? get myImages => _myImages;
 
   Future<bool> createProfile(
       CreateProfileModel model, BuildContext context) async {
@@ -52,8 +54,8 @@ class ProfileProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> updateUserProfile(String id,
-      Map<String, dynamic> updatedField, BuildContext context) async {
+  Future<bool> updateUserProfile(String id, Map<String, dynamic> updatedField,
+      BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final token = authProvider.userModel?.token;
     try {
@@ -82,7 +84,6 @@ class ProfileProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-
 
   Future<bool> getUserProfile(String userId, BuildContext context) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -116,8 +117,8 @@ class ProfileProvider with ChangeNotifier {
     }
   }
 
-  Future<void> getProfilePhotos(
-      List<String> fileIds, BuildContext context) async {
+  Future<void> getProfilePhotos(List<String> fileIds, BuildContext context,
+      {bool? myImages}) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final token = authProvider.userModel?.token;
 
@@ -135,7 +136,7 @@ class ProfileProvider with ChangeNotifier {
       );
 
       if (response.statusCode == 201) {
-        _images = response.data['images'];
+        myImages == true ? _myImages = response.data : _images = response.data;
         debugPrint('Get photos created successfully');
       } else {
         debugPrint('API call failed: ${response.statusMessage}');
