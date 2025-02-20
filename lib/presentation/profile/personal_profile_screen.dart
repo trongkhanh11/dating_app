@@ -53,8 +53,6 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final userId = authProvider.userModel?.user.id ?? "";
     await profileProvider.getUserProfile(userId, context);
-    List<String> fileIds = profileProvider.profile?.files ?? [];
-    await profileProvider.getProfilePhotos(fileIds, context, myImages: true);
     await preferencesProvider.getUserPreferences(userId, context);
     bioController = TextEditingController(text: profileProvider.profile?.bio);
     selectedOrientation = profileProvider.profile?.sexualOrientation ?? [];
@@ -110,7 +108,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                         child: CircleAvatar(
                           radius: 50,
                           backgroundImage: NetworkImage(
-                              profileProvider.myImages?.first ?? ""),
+                              profileProvider.profile?.files?.first ?? ""),
                         ),
                       ),
                       SizedBox(height: 16),
@@ -145,7 +143,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                       Container(
                           padding: EdgeInsets.all(8),
                           child: MultiImagePicker(
-                            imageUrls: profileProvider.myImages,
+                            imageUrls: profileProvider.profile?.files,
                           )),
                       SizedBox(height: 16),
                       //Bio
