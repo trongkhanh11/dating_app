@@ -1,49 +1,129 @@
-import 'package:dating_app/presentation/loveScreen/love_screen.dart';
+import 'package:dating_app/models/profile_model.dart';
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatelessWidget {
-  final User user;
+  final Profile profile;
 
-  ProfileScreen({required this.user});
+  ProfileScreen({required this.profile});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(user.name),
         backgroundColor: Colors.pinkAccent,
+        elevation: 0,
+        leading: Padding(
+          padding: EdgeInsets.all(8.0),
+          child: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.white, size: 24),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        centerTitle: true,
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(height: 20),
-          CircleAvatar(
-            backgroundImage: NetworkImage(user.imageUrl),
-            radius: 60,
-          ),
-          SizedBox(height: 20),
-          Text(
-            "${user.name}, ${user.age} tuổi",
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
-          Text("${user.distance} km", style: TextStyle(fontSize: 16, color: Colors.grey)),
-          Padding(
-            padding: EdgeInsets.all(20),
-            child: Text(
-              "Đây là phần mô tả về ${user.name}. Bạn có thể thêm các thông tin khác tại đây!",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            /// AVATAR TRÒN
+            CircleAvatar(
+              backgroundImage:
+                  NetworkImage("https://avatar.iran.liara.run/public/41"),
+              radius: 60,
+              backgroundColor: Colors.grey[300],
             ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Bạn đã match với ${user.name}! ❤️")),
-              );
-            },
-            child: Text("Thích ❤️"),
-          ),
-        ],
+
+            SizedBox(height: 20),
+
+            /// TÊN + TUỔI
+            Text(
+              "${profile.displayName ?? "Unknown"}, ${profile.age ?? "?"} tuổi",
+              style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87),
+            ),
+
+            SizedBox(height: 10),
+
+            /// TIỂU SỬ (BIO)
+            Text(
+              profile.bio ?? "Không có mô tả.",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+            ),
+
+            SizedBox(height: 30),
+
+            /// NÚT THÍCH ❤️ & KHÔNG THÍCH 🚫
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                /// NÚT KHÔNG THÍCH 🚫
+                ElevatedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content:
+                            Text("Bạn đã bỏ qua ${profile.displayName}! 🚫"),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[400],
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    elevation: 3,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.close, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text("Không thích",
+                          style: TextStyle(fontSize: 16, color: Colors.white)),
+                    ],
+                  ),
+                ),
+
+                SizedBox(width: 20),
+
+                /// NÚT THÍCH ❤️
+                ElevatedButton(
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content:
+                            Text("Bạn đã match với ${profile.displayName}! ❤️"),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.pinkAccent,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30)),
+                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    elevation: 3,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.favorite, color: Colors.white),
+                      SizedBox(width: 8),
+                      Text("Thích ❤️",
+                          style: TextStyle(fontSize: 16, color: Colors.white)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
