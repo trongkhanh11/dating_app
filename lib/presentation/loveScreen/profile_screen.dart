@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class ProfileScreen extends StatelessWidget {
   final Profile profile;
 
-  ProfileScreen({required this.profile});
+  const ProfileScreen({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +38,7 @@ class ProfileScreen extends StatelessWidget {
 
             /// TÊN + TUỔI
             Text(
-              "${profile.displayName ?? "Unknown"}, ${profile.age ?? "?"} tuổi",
+              "${profile.displayName}, ${profile.age} tuổi",
               style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -49,7 +49,7 @@ class ProfileScreen extends StatelessWidget {
 
             /// TIỂU SỬ (BIO)
             Text(
-              profile.bio ?? "Không có mô tả.",
+              profile.bio,
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 16, color: Colors.grey[700]),
             ),
