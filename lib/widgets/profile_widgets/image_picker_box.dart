@@ -16,15 +16,13 @@ class MultiImagePicker extends StatefulWidget {
 }
 
 class _MultiImagePickerState extends State<MultiImagePicker> {
-  final List<File?> _images =
-      List.generate(6, (index) => null); // Danh sách 6 ảnh
+  final List<File?> _images = List.generate(6, (index) => null);
   final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
     print('Initial Photo:${widget.imageUrls}');
-    // Nếu imageUrl được truyền vào, bạn sẽ gán nó vào danh sách _images
     if (widget.imageUrls != null && widget.imageUrls!.isNotEmpty) {
       for (int i = 0; i < widget.imageUrls!.length && i < 6; i++) {
         _images[i] = File(widget.imageUrls![i]);

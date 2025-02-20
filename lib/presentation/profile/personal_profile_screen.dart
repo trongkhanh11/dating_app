@@ -54,20 +54,15 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
     final userId = authProvider.userModel?.user.id ?? "";
 
     List<String> fileIds = profileProvider.profile?.files ?? [];
-    await profileProvider.getProfilePhotos(fileIds, context);
-    //imagesUrl = profileProvider.images;
+    await profileProvider.getProfilePhotos(fileIds, context, myImages: true);
     await profileProvider.getUserProfile(userId, context);
     await preferencesProvider.getUserPreferences(userId, context);
     bioController = TextEditingController(text: profileProvider.profile?.bio);
-    //lookingFor = preferencesProvider.preferences!.lookingFor;
     selectedOrientation = profileProvider.profile?.sexualOrientation ?? [];
     selectedGender = profileProvider.profile?.gender;
     selectedCity = profileProvider.profile?.location;
     preferencesId = preferencesProvider.preferences?.id ?? "";
     profileId = profileProvider.profile?.id ?? "";
-    print("profile id ${profileProvider.profile?.id}");
-    print("id ${preferencesProvider.preferences?.id}");
-    print(preferencesProvider.preferences?.lookingFor);
   }
 
   void updatedPreferenceField(String field, dynamic value) {
@@ -83,7 +78,6 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
     final Map<String, dynamic> updatedData = {field: value};
     final profileProvider =
         Provider.of<ProfileProvider>(context, listen: false);
-    print("id update ${profileProvider.profile?.id}");
     profileProvider.updateUserProfile(profileId, updatedData, context);
   }
 
@@ -117,8 +111,8 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                         backgroundColor: Theme.of(context).colorScheme.primary,
                         child: CircleAvatar(
                           radius: 50,
-                          backgroundImage:
-                              NetworkImage(profileProvider.images!.first),
+                          backgroundImage: NetworkImage(
+                              profileProvider.myImages?.first ?? ""),
                         ),
                       ),
                       SizedBox(height: 16),
@@ -153,7 +147,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                       Container(
                           padding: EdgeInsets.all(8),
                           child: MultiImagePicker(
-                            imageUrls: profileProvider.images,
+                            imageUrls: profileProvider.myImages,
                           )),
                       SizedBox(height: 16),
                       //Bio
@@ -180,7 +174,8 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                             border:
                                 OutlineInputBorder(borderSide: BorderSide.none),
                           ),
-                         onEditingComplete: ()=>updatedProfileField('bio', bioController.text),
+                          onEditingComplete: () =>
+                              updatedProfileField('bio', bioController.text),
                         ),
                       ),
                       SizedBox(height: 16),
@@ -267,7 +262,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                             setState(() {
                               selectedGender = newGender;
                             });
-                              updatedProfileField('gender', newGender);
+                            updatedProfileField('gender', newGender);
                           },
                         ),
                       ),
@@ -344,32 +339,31 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                               },
                             ),
                             SelectionWidget(
-                                title: "Education",
-                                initialSelection:
-                                    preferencesProvider.preferences?.education,
-                                options: [
-                                  {
-                                    "label": "High School",
-                                    "value": "high_school"
-                                  },
-                                  {
-                                    "label": "Bachelor's Degree",
-                                    "value": "bachelor"
-                                  },
-                                  {
-                                    "label": "Master's Degree",
-                                    "value": "master"
-                                  },
-                                  {"label": "PhD", "value": "phd"},
-                                  {"label": "Other", "value": "other"},
-                                ],onChanged: (newEducation) {
+                              title: "Education",
+                              initialSelection:
+                                  preferencesProvider.preferences?.education,
+                              options: [
+                                {
+                                  "label": "High School",
+                                  "value": "high_school"
+                                },
+                                {
+                                  "label": "Bachelor's Degree",
+                                  "value": "bachelor"
+                                },
+                                {"label": "Master's Degree", "value": "master"},
+                                {"label": "PhD", "value": "phd"},
+                                {"label": "Other", "value": "other"},
+                              ],
+                              onChanged: (newEducation) {
                                 setState(() {
-                                  preferencesProvider
-                                      .preferences?.education = newEducation;
+                                  preferencesProvider.preferences?.education =
+                                      newEducation;
                                 });
                                 updatedPreferenceField(
                                     'education', newEducation);
-                              },),
+                              },
+                            ),
                             SelectionWidget(
                               title: "Future Family",
                               initialSelection:
@@ -631,16 +625,15 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                       Container(
                         color: Colors.white,
                         child: SexualOrientationSelection(
-                          initialOrientation: selectedOrientation.isNotEmpty
-                              ? selectedOrientation.first
-                              : "",
-                          onChanged: (newType) {
-                            setState(() {
-                              selectedOrientation = [newType];
-                            });
-                           updatedProfileField('sexualOrientation',newType);
-                          }
-                        ),
+                            initialOrientation: selectedOrientation.isNotEmpty
+                                ? selectedOrientation.first
+                                : "",
+                            onChanged: (newType) {
+                              setState(() {
+                                selectedOrientation = [newType];
+                              });
+                              updatedProfileField('sexualOrientation', newType);
+                            }),
                       ),
                       SizedBox(height: 16),
                       //Location
