@@ -69,7 +69,6 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
     final Map<String, dynamic> updatedData = {field: value};
     final preferencesProvider =
         Provider.of<PreferencesProvider>(context, listen: false);
-    print("id update ${preferencesProvider.preferences?.id}");
     preferencesProvider.updateUserPreferences(
         preferencesId, updatedData, context);
   }

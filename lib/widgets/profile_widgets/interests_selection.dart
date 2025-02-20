@@ -34,7 +34,6 @@ class _InterestsSelectionState extends State<InterestsSelection> {
   @override
   void initState() {
     super.initState();
-     print("Initial Interests: ${widget.interests}");
     selectedInterests = List.from(widget.interests);
   }
 

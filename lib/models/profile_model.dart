@@ -199,6 +199,7 @@ class Preferences {
   /// Chuyển đổi từ object Preferences sang JSON
   Map<String, dynamic> toJson() {
     return {
+      'userId':userId,
       'hobbies': hobbies,
       'lookingFor': lookingFor,
       'languages': languages ?? [],
