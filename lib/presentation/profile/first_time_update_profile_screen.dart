@@ -125,7 +125,7 @@ class _FirstTimeUpdateProfileScreenState
       isPublic: isPublic,
       age: int.tryParse(ageController.text) ?? 18,
       gender: selectedGender ?? "Other",
-      sexualOrientation: ["male"],
+      sexualOrientation: selectedOrientation,
       bio: bioController.text,
       // interests: interests,
       location: selectedCity ?? "Unknown",

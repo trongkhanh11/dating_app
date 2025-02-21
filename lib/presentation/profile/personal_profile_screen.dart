@@ -41,7 +41,6 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (mounted) {
         _loadUserProfile();
-        isLoading = false;
       }
     });
   }
@@ -92,7 +91,9 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
       body: Consumer3<ProfileProvider, PreferencesProvider, AuthProvider>(
           builder: (context, profileProvider, preferencesProvider, authProvider,
               child) {
-        return isLoading
+        return authProvider.isLoggingOut ||
+                profileProvider.isLoading ||
+                preferencesProvider.isLoading
             ? Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
                 child: Padding(
@@ -106,8 +107,14 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                         backgroundColor: Theme.of(context).colorScheme.primary,
                         child: CircleAvatar(
                           radius: 50,
-                          backgroundImage: NetworkImage(
-                              profileProvider.profile?.files?.first ?? ""),
+                          backgroundImage: profileProvider.profile?.files !=
+                                      null &&
+                                  profileProvider.profile!.files!.isNotEmpty
+                              ? NetworkImage(
+                                  profileProvider.profile!.files!.first)
+                              : AssetImage(
+                                      "assets/images/default_avatar.png")
+                                  as ImageProvider,
                         ),
                       ),
                       SizedBox(height: 16),
