@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:flutter/material.dart';
@@ -8,7 +7,8 @@ import 'package:dotted_border/dotted_border.dart';
 import 'package:provider/provider.dart';
 
 class MultiImagePicker extends StatefulWidget {
-  final List? imageUrls;
+  final List<String>? imageUrls; // Danh sách URL ảnh từ server
+
   const MultiImagePicker({super.key, this.imageUrls});
 
   @override
@@ -16,43 +16,55 @@ class MultiImagePicker extends StatefulWidget {
 }
 
 class _MultiImagePickerState extends State<MultiImagePicker> {
-  final List<File?> _images = List.generate(6, (index) => null);
+  List<dynamic> _images = []; // Chứa cả File (ảnh cục bộ) và String (URL)
   final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
-    if (widget.imageUrls != null && widget.imageUrls!.isNotEmpty) {
+
+    // Khởi tạo danh sách ảnh rỗng (tối đa 6 ảnh)
+    _images = List.generate(6, (index) => null);
+
+    // Nếu có ảnh từ server, cập nhật danh sách ảnh
+    if (widget.imageUrls != null) {
       for (int i = 0; i < widget.imageUrls!.length && i < 6; i++) {
-        _images[i] = File(widget.imageUrls![i]);
+        _images[i] = widget.imageUrls![i]; // Lưu URL trực tiếp
       }
     }
   }
-  //final profileProvider = Provider.o // Khởi tạo APIProvider của bạn
 
+  /// Chọn ảnh từ Camera/Gallery và cập nhật danh sách ảnh
   Future<void> _pickImage(int index, ImageSource source) async {
-    final pickedFile = await _picker.pickImage(source: source);
+    try {
+      final pickedFile = await _picker.pickImage(source: source);
 
-    if (pickedFile != null) {
-      setState(() {
-        _images[index] = File(pickedFile.path);
-      });
+      if (pickedFile != null) {
+        if (!mounted) return;
+        setState(() {
+          _images[index] = File(pickedFile.path); // Cập nhật ảnh mới vào danh sách
+        });
+
+        final authProvider = context.read<AuthProvider>();
+        final profileProvider = context.read<ProfileProvider>();
+        final userId = authProvider.userModel?.user.id ?? "";
+
+        // Chỉ upload ảnh mới thay vì toàn bộ danh sách
+        await profileProvider.uploadPhotos(userId, [_images[index] as File], context);
+      }
+    } catch (e) {
+      debugPrint("❌ Lỗi khi chọn ảnh: $e");
     }
-
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final profileProvider =
-        Provider.of<ProfileProvider>(context, listen: false);
-    final userId = authProvider.userModel?.user.id ?? "";
-    await profileProvider.uploadPhotos(userId, _images, context);
   }
 
+  /// Hiển thị Modal để chọn nguồn ảnh (Camera/Gallery)
   void _showImageSourceDialog(int index) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        height: MediaQuery.of(context).size.height,
+        height: MediaQuery.of(context).size.height * 0.3,
         width: double.infinity,
         decoration: BoxDecoration(
           color: Colors.white,
@@ -62,76 +74,30 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(height: 50),
-            Text(
-              "Add Photos/Videos",
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
+            Text("Thêm ảnh", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             SizedBox(height: 20),
-            InkWell(
-              onTap: () {
+            ElevatedButton.icon(
+              onPressed: () {
                 Navigator.pop(context);
                 _pickImage(index, ImageSource.camera);
               },
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: Colors.blueAccent,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.camera_alt, color: Colors.white, size: 28),
-                    SizedBox(width: 10),
-                    Text(
-                      "Take a selfie photo",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
+              icon: Icon(Icons.camera_alt),
+              label: Text("Chụp ảnh"),
             ),
-            SizedBox(height: 20),
-            InkWell(
-              onTap: () {
+            SizedBox(height: 10),
+            ElevatedButton.icon(
+              onPressed: () {
                 Navigator.pop(context);
                 _pickImage(index, ImageSource.gallery);
               },
-              child: Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: Colors.green,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.photo_library, color: Colors.white, size: 28),
-                    SizedBox(width: 10),
-                    Text(
-                      "Choose from gallery",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
+              icon: Icon(Icons.photo_library),
+              label: Text("Chọn từ thư viện"),
             ),
             Spacer(),
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("Cancel",
-                  style: TextStyle(color: Colors.red, fontSize: 18)),
+              child: Text("Hủy", style: TextStyle(color: Colors.red, fontSize: 18)),
             ),
-            SizedBox(height: 10),
           ],
         ),
       ),
@@ -157,12 +123,19 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
               image: _images[index] != null
-                  ? DecorationImage(
-                      image: NetworkImage(_images[index]!.path),
-                      fit: BoxFit.cover)
+                  ? _images[index] is File
+                      ? DecorationImage(
+                          image: FileImage(_images[index] as File),
+                          fit: BoxFit.cover,
+                        )
+                      : DecorationImage(
+                          image: NetworkImage(_images[index] as String),
+                          fit: BoxFit.cover,
+                        )
                   : null,
             ),
-            child: _images[index] == null
+            child: _images[index] == null &&
+                    (widget.imageUrls == null || index >= widget.imageUrls!.length)
                 ? DottedBorder(
                     color: Colors.grey,
                     strokeWidth: 1.5,
@@ -170,24 +143,7 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
                     borderType: BorderType.RRect,
                     radius: Radius.circular(12),
                     child: Center(
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: [
-                          Positioned(
-                            bottom: 8,
-                            right: 8,
-                            child: Container(
-                              padding: EdgeInsets.all(6),
-                              decoration: BoxDecoration(
-                                color: Colors.redAccent,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(Icons.add,
-                                  color: Colors.white, size: 18),
-                            ),
-                          ),
-                        ],
-                      ),
+                      child: Icon(Icons.add, color: Colors.grey, size: 40),
                     ),
                   )
                 : Align(

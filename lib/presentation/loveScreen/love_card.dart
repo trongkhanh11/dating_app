@@ -29,7 +29,7 @@ class LoveCard extends StatelessWidget {
               contentPadding: EdgeInsets.all(15),
               leading: CircleAvatar(
                 backgroundImage:
-                    NetworkImage("https://avatar.iran.liara.run/public/41"),
+                    NetworkImage("${profile.files?.first}"),
                 radius: 30,
               ),
               title: Text(
