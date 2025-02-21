@@ -108,11 +108,11 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                         backgroundColor: Theme.of(context).colorScheme.primary,
                         child: CircleAvatar(
                           radius: 50,
-                          backgroundImage: profileProvider.profile?.files !=
+                          backgroundImage: profileProvider.myProfile?.files !=
                                       null &&
-                                  profileProvider.profile!.files!.isNotEmpty
+                                  profileProvider.myProfile!.files!.isNotEmpty
                               ? NetworkImage(
-                                  profileProvider.profile!.files!.first)
+                                  profileProvider.myProfile!.files!.first)
                               : AssetImage("assets/images/default_avatar.png")
                                   as ImageProvider,
                         ),
