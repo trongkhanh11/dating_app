@@ -119,3 +119,35 @@ class RegisterModel {
     };
   }
 }
+
+class UserInChat {
+  final String id;
+  final int age;
+  final String displayName;
+  final String? image;
+
+  UserInChat({
+    required this.id,
+    required this.age,
+    required this.displayName,
+    this.image,
+  });
+
+  factory UserInChat.fromJson(Map<String, dynamic> json) {
+    return UserInChat(
+      id: json['id'],
+      age: json['age'],
+      displayName: json['displayName'],
+      image: json['image'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'age': age,
+      'displayName': displayName,
+      'image': image,
+    };
+  }
+}

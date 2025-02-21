@@ -52,14 +52,14 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
         Provider.of<PreferencesProvider>(context, listen: false);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final userId = authProvider.userModel?.user.id ?? "";
-    await profileProvider.getUserProfile(userId, context);
+    await profileProvider.getUserProfile(userId, context, myProfile: true);
     await preferencesProvider.getUserPreferences(userId, context);
-    bioController = TextEditingController(text: profileProvider.profile?.bio);
-    selectedOrientation = profileProvider.profile?.sexualOrientation ?? [];
-    selectedGender = profileProvider.profile?.gender;
-    selectedCity = profileProvider.profile?.location;
+    bioController = TextEditingController(text: profileProvider.myProfile?.bio);
+    selectedOrientation = profileProvider.myProfile?.sexualOrientation ?? [];
+    selectedGender = profileProvider.myProfile?.gender;
+    selectedCity = profileProvider.myProfile?.location;
     preferencesId = preferencesProvider.preferences?.id ?? "";
-    profileId = profileProvider.profile?.id ?? "";
+    profileId = profileProvider.myProfile?.id ?? "";
   }
 
   void updatedPreferenceField(String field, dynamic value) {
@@ -93,7 +93,8 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
               child) {
         return authProvider.isLoggingOut ||
                 profileProvider.isLoading ||
-                preferencesProvider.isLoading
+                preferencesProvider.isLoading ||
+                profileProvider.myProfile == null
             ? Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
                 child: Padding(
@@ -108,20 +109,20 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                         child: CircleAvatar(
                           radius: 50,
                           backgroundImage: NetworkImage(
-                              profileProvider.profile?.files?.first ?? ""),
+                              profileProvider.myProfile?.files?.first ?? ""),
                         ),
                       ),
                       SizedBox(height: 16),
                       //Name
                       Text(
-                        profileProvider.profile!.displayName,
+                        profileProvider.myProfile!.displayName,
                         style: TextStyle(
                             fontSize: 24, fontWeight: FontWeight.bold),
                       ),
                       SizedBox(height: 8),
                       //Age
                       Text(
-                        '${profileProvider.profile!.age} years old',
+                        '${profileProvider.myProfile!.age} years old',
                         style: TextStyle(fontSize: 16),
                       ),
                       SizedBox(height: 20),
@@ -143,7 +144,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
                       Container(
                           padding: EdgeInsets.all(8),
                           child: MultiImagePicker(
-                            imageUrls: profileProvider.profile?.files,
+                            imageUrls: profileProvider.myProfile?.files,
                           )),
                       SizedBox(height: 16),
                       //Bio

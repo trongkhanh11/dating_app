@@ -12,9 +12,11 @@ class ProfileProvider with ChangeNotifier {
   bool isLoading = false;
   bool hasError = false;
   Profile? _profile;
+  Profile? _myProfile;
   String errorMessage = '';
 
   Profile? get profile => _profile;
+  Profile? get myProfile => _myProfile;
 
   Future<bool> createProfile(
       CreateProfileModel model, BuildContext context) async {
@@ -81,10 +83,8 @@ class ProfileProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> getUserProfile(
-    String userId,
-    BuildContext context,
-  ) async {
+  Future<bool> getUserProfile(String userId, BuildContext context,
+      {bool? myProfile}) async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final token = authProvider.userModel?.token;
 
@@ -100,7 +100,9 @@ class ProfileProvider with ChangeNotifier {
           token: token);
 
       if (response.statusCode == 200) {
-        _profile = Profile.fromJson(response.data);
+        myProfile == true
+            ? _myProfile = Profile.fromJson(response.data)
+            : _profile = Profile.fromJson(response.data);
         notifyListeners();
         return true;
       } else {

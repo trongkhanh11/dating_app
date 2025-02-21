@@ -17,9 +17,9 @@ class ListConversation {
 
 class Conversation {
   final String id;
-  final User user1;
-  final User user2;
-  final LastMessage lastMessage;
+  final UserInChat user1;
+  final UserInChat user2;
+  final Message lastMessage;
 
   Conversation({
     required this.id,
@@ -31,15 +31,29 @@ class Conversation {
   factory Conversation.fromJson(Map<String, dynamic> json) {
     return Conversation(
       id: json['id'],
-      user1: User.fromJson(json['user1']),
-      user2: User.fromJson(json['user2']),
-      lastMessage: LastMessage.fromJson(json['lastMessage']),
+      user1: UserInChat.fromJson(json['user1']),
+      user2: UserInChat.fromJson(json['user2']),
+      lastMessage: Message.fromJson(json['lastMessage']),
     );
   }
 }
 
-class LastMessage {
-  final int id;
+class ListMessage {
+  List<Message>? messages;
+
+  ListMessage({this.messages});
+
+  factory ListMessage.fromJson(Map<String, dynamic> json) {
+    return ListMessage(
+      messages: json["data"] != null
+          ? List<Message>.from(json["data"].map((x) => Message.fromJson(x)))
+          : [],
+    );
+  }
+}
+
+class Message {
+  final String id;
   final String messageContent;
   final String status;
   final String? readAt;
@@ -47,7 +61,7 @@ class LastMessage {
   final String receiverId;
   final String createdAt;
 
-  LastMessage({
+  Message({
     required this.id,
     required this.messageContent,
     required this.status,
@@ -57,8 +71,8 @@ class LastMessage {
     required this.createdAt,
   });
 
-  factory LastMessage.fromJson(Map<String, dynamic> json) {
-    return LastMessage(
+  factory Message.fromJson(Map<String, dynamic> json) {
+    return Message(
       id: json['id'],
       messageContent: json['messageContent'],
       status: json['status'],
@@ -67,5 +81,25 @@ class LastMessage {
       receiverId: json['receiverId'],
       createdAt: json['createdAt'],
     );
+  }
+}
+
+class SendMessageModel {
+  final String senderId;
+  final String receiverId;
+  final String messageContent;
+
+  SendMessageModel({
+    required this.senderId,
+    required this.receiverId,
+    required this.messageContent,
+  });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'senderId': senderId,
+      'receiverId': receiverId,
+      'messageContent': messageContent,
+    };
   }
 }

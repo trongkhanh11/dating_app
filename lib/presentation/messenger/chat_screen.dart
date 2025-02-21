@@ -1,13 +1,14 @@
 import 'dart:async';
-import 'dart:io';
 
+import 'package:dating_app/models/conversation_model.dart';
+import 'package:dating_app/providers/auth_provider.dart';
+import 'package:dating_app/providers/conversation_provider.dart';
 import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class ChatScreen extends StatefulWidget {
   final String chatId;
@@ -30,82 +31,78 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  late IO.Socket socket;
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final List<File> selectedImages = [];
+
   bool isLikeMessage = false;
-  bool isSendingImage = false;
   bool isMessageEmpty = true;
 
-  List<Map<String, dynamic>> messages = [];
   StreamSubscription? _messagesSubscription;
 
-  Future<void> fetchMessages() async {
-    // final databaseReference = FirebaseDatabase.instance.ref();
-    // final messagesRef =
-    //     databaseReference.child('chats/${widget.chatId}/messages');
-
-    // _messagesSubscription =
-    //     messagesRef.orderByChild('timestamp').onValue.listen((event) {
-    //   if (!mounted) return;
-
-    //   if (event.snapshot.exists) {
-    //     List<Map<String, dynamic>> messageData = [];
-    //     for (var childSnapshot in event.snapshot.children) {
-    //       var message = childSnapshot.value as Map;
-    //       messageData.add({
-    //         'sender': message['sender'],
-    //         'message': message['message'],
-    //         'timestamp': message['timestamp'],
-    //       });
-    //     }
-
-    //     setState(() {
-    //       messages = messageData;
-    //     });
-
-    //     scrollToBottom();
-    //   }
-    // });
+  @override
+  void initState() {
+    super.initState();
+    connectSocket();
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
+      await Provider.of<ConversationProvider>(context, listen: false)
+          .getMessages(widget.userId, widget.otherUserId, context);
+    });
   }
 
-  Future<void> sendMessage([String? imageUrl]) async {
+  void connectSocket() {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final token = authProvider.userModel?.token;
+
+    if (token == null || token.isEmpty) {
+      print('❌ Token không hợp lệ, không kết nối socket');
+      return;
+    }
+
+    socket = IO.io('http://192.168.100.137:3000/', <String, dynamic>{
+      'transports': ['websocket'],
+      'autoConnect': false,
+      'auth': {'token': token ?? ''},
+    });
+
+    socket.connect();
+
+    socket.onConnect((_) {
+      print('Connected!');
+    });
+
+    socket.on('new_message', (data) {
+      print('New message: $data');
+      Provider.of<ConversationProvider>(context, listen: false)
+          .getMessages(widget.userId, widget.otherUserId, context);
+      scrollToBottom();
+    });
+
+    socket.onDisconnect((_) {
+      print('Disconnecte!!');
+    });
+  }
+
+  Future<void> sendMessage() async {
     String messageText = _messageController.text.trim();
-    // if (messageText.isEmpty && imageUrl == null && !isLikeMessage) return;
+    if (messageText.isEmpty && !isLikeMessage) return;
 
-    // final databaseReference = FirebaseDatabase.instance.ref();
-    // const timestamp = ServerValue.timestamp;
+    final String messageContent = isLikeMessage ? "👍" : messageText;
 
-    // final String message =
-    //     messageText.isEmpty && imageUrl == null && isLikeMessage
-    //         ? "👍"
-    //         : imageUrl ?? messageText;
+    SendMessageModel model = SendMessageModel(
+        senderId: widget.userId,
+        receiverId: widget.otherUserId,
+        messageContent: messageContent);
 
-    // final newMessage = {
-    //   'sender': widget.userId,
-    //   'message': message,
-    //   'timestamp': timestamp,
-    // };
+    bool sent = await Provider.of<ConversationProvider>(context, listen: false)
+        .sendMessage(model, context);
 
-    // final members = {
-    //   widget.userId: true,
-    //   widget.otherUserId: true,
-    // };
+    if (sent) {
+      Provider.of<ConversationProvider>(context, listen: false)
+          .getMessages(widget.userId, widget.otherUserId, context);
+    }
 
-    // await databaseReference
-    //     .child('chats/${widget.chatId}/messages')
-    //     .push()
-    //     .set(newMessage);
-
-    // await databaseReference
-    //     .child('chats/${widget.chatId}/members')
-    //     .push()
-    //     .set(members);
-
-    // if (message != imageUrl) {
-    //   _messageController.clear();
-    // }
-
+    _messageController.clear();
     scrollToBottom();
   }
 
@@ -119,12 +116,6 @@ class _ChatScreenState extends State<ChatScreen> {
         );
       }
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchMessages();
   }
 
   @override
@@ -188,105 +179,68 @@ class _ChatScreenState extends State<ChatScreen> {
         ),
         body: Column(
           children: [
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                itemCount: messages.length,
-                itemBuilder: (context, index) {
-                  final message = messages[index];
-                  final isSentByCurrentUser =
-                      message['sender'] == widget.userId;
-                  return Align(
-                    alignment: isSentByCurrentUser
-                        ? Alignment.centerRight
-                        : Alignment.centerLeft,
-                    child: Container(
-                      constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.7,
-                      ),
-                      margin: const EdgeInsets.symmetric(
-                          vertical: 15, horizontal: 10),
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: isSentByCurrentUser
-                            ? Theme.of(context)
-                                .colorScheme
-                                .primary
-                                .withOpacity(0.3)
-                            : Colors.grey[300],
-                        borderRadius: BorderRadius.only(
-                          topLeft: const Radius.circular(12),
-                          topRight: const Radius.circular(12),
-                          bottomLeft: isSentByCurrentUser
-                              ? const Radius.circular(12)
-                              : Radius.zero,
-                          bottomRight: isSentByCurrentUser
-                              ? Radius.zero
-                              : const Radius.circular(12),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(message['message']),
-                          const SizedBox(height: 5),
-                          Text(
-                            DateFormat('h:mm a')
-                                .format(
-                                  DateTime.fromMillisecondsSinceEpoch(
-                                    message['timestamp'],
-                                    isUtc: true,
-                                  ).toLocal(),
-                                )
-                                .toString(),
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.grey[700]),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-            if (selectedImages.isNotEmpty)
-              Container(
-                height: 100,
-                padding: const EdgeInsets.symmetric(vertical: 8),
+            Consumer<ConversationProvider>(
+                builder: (context, conversationProvider, child) {
+              final messages = conversationProvider
+                      .listMessage?.messages?.reversed
+                      .toList() ??
+                  [];
+              return Expanded(
                 child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: selectedImages.length,
+                  controller: _scrollController,
+                  itemCount: messages.length,
                   itemBuilder: (context, index) {
-                    final image = selectedImages[index];
-                    return Padding(
-                      padding: const EdgeInsets.all(4.0),
-                      child: Stack(
-                        children: [
-                          Image.file(
-                            File(image.path),
-                            width: 60,
-                            height: 60,
-                            fit: BoxFit.cover,
+                    final message = messages[index];
+                    final isSentByCurrentUser =
+                        message.senderId == widget.userId;
+                    return Align(
+                      alignment: isSentByCurrentUser
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: Container(
+                        constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width * 0.7,
+                        ),
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 15, horizontal: 10),
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: isSentByCurrentUser
+                              ? Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withOpacity(0.3)
+                              : Colors.grey[300],
+                          borderRadius: BorderRadius.only(
+                            topLeft: const Radius.circular(12),
+                            topRight: const Radius.circular(12),
+                            bottomLeft: isSentByCurrentUser
+                                ? const Radius.circular(12)
+                                : Radius.zero,
+                            bottomRight: isSentByCurrentUser
+                                ? Radius.zero
+                                : const Radius.circular(12),
                           ),
-                          Positioned(
-                            top: 0,
-                            right: 0,
-                            child: IconButton(
-                              icon:
-                                  const Icon(Icons.cancel, color: Colors.white),
-                              onPressed: () {
-                                setState(() {
-                                  selectedImages.removeAt(index);
-                                });
-                              },
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(message.messageContent),
+                            const SizedBox(height: 5),
+                            Text(
+                              DateFormat('h:mm a').format(
+                                  DateTime.parse(message.createdAt).toLocal()),
+                              style: TextStyle(
+                                  fontSize: 12, color: Colors.grey[700]),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     );
                   },
                 ),
-              ),
+              );
+            }),
             Padding(
               padding: const EdgeInsets.all(8.0).copyWith(bottom: 15),
               child: Row(
@@ -338,29 +292,18 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   const SizedBox(width: 10),
 
-                  _messageController.value.text.isNotEmpty && !isMessageEmpty ||
-                          selectedImages.isNotEmpty
-                      ? isSendingImage
-                          ? const SizedBox(
-                              width: 28,
-                              height: 28,
-                              child: CircularProgressIndicator(strokeWidth: 3),
-                            )
-                          : IconButton(
-                              onPressed: () async {
-                                // if (selectedImages.isNotEmpty) {
-                                //   await sendImages();
-                                // } else {
-                                //   await sendMessage();
-                                // }
-                              },
-                              padding: const EdgeInsets.all(10),
-                              icon: Icon(
-                                FluentSystemIcons.ic_fluent_send_filled,
-                                size: 28,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            )
+                  _messageController.value.text.isNotEmpty
+                      ? IconButton(
+                          onPressed: () {
+                            sendMessage();
+                          },
+                          padding: const EdgeInsets.all(10),
+                          icon: Icon(
+                            FluentSystemIcons.ic_fluent_send_filled,
+                            size: 28,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        )
                       : IconButton(
                           onPressed: () {
                             setState(() {
