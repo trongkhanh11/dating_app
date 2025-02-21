@@ -12,52 +12,58 @@ class ProfileScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Colors.pinkAccent,
         elevation: 0,
-        leading: Padding(
-          padding: EdgeInsets.all(8.0),
-          child: IconButton(
-            icon: Icon(Icons.arrow_back, color: Colors.white, size: 24),
-            onPressed: () => Navigator.pop(context),
-          ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.white, size: 24),
+          onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            /// AVATAR TRÒN
-            CircleAvatar(
-              backgroundImage:
-                  NetworkImage("https://avatar.iran.liara.run/public/41"),
-              radius: 60,
-              backgroundColor: Colors.grey[300],
+      body: Column(
+        children: [
+          /// Nội dung hiển thị thông tin profile
+          Expanded(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  /// AVATAR TRÒN
+                  CircleAvatar(
+                    backgroundImage: NetworkImage("${profile.files?.first}"),
+                    radius: 60,
+                    backgroundColor: Colors.grey[300],
+                  ),
+
+                  SizedBox(height: 20),
+
+                  /// TÊN + TUỔI
+                  Text(
+                    "${profile.displayName}, ${profile.age} tuổi",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+
+                  SizedBox(height: 10),
+
+                  /// TIỂU SỬ (BIO)
+                  Text(
+                    profile.bio,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                  ),
+                ],
+              ),
             ),
+          ),
 
-            SizedBox(height: 20),
-
-            /// TÊN + TUỔI
-            Text(
-              "${profile.displayName}, ${profile.age} tuổi",
-              style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87),
-            ),
-
-            SizedBox(height: 10),
-
-            /// TIỂU SỬ (BIO)
-            Text(
-              profile.bio,
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-            ),
-
-            SizedBox(height: 30),
-
-            /// NÚT THÍCH ❤️ & KHÔNG THÍCH 🚫
-            Row(
+          /// NÚT THÍCH ❤️ & KHÔNG THÍCH 🚫 (CỐ ĐỊNH DƯỚI CÙNG)
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+            color: Colors.white,
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 /// NÚT KHÔNG THÍCH 🚫
@@ -65,8 +71,7 @@ class ProfileScreen extends StatelessWidget {
                   onPressed: () {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content:
-                            Text("Bạn đã bỏ qua ${profile.displayName}! 🚫"),
+                        content: Text("You have skip ${profile.displayName}! 🚫"),
                         duration: Duration(seconds: 2),
                       ),
                     );
@@ -75,7 +80,8 @@ class ProfileScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey[400],
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30)),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     elevation: 3,
                   ),
@@ -84,7 +90,7 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       Icon(Icons.close, color: Colors.white),
                       SizedBox(width: 8),
-                      Text("Không thích",
+                      Text("Skip",
                           style: TextStyle(fontSize: 16, color: Colors.white)),
                     ],
                   ),
@@ -98,7 +104,7 @@ class ProfileScreen extends StatelessWidget {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content:
-                            Text("Bạn đã match với ${profile.displayName}! ❤️"),
+                            Text("You have match with ${profile.displayName}! ❤️"),
                         duration: Duration(seconds: 2),
                       ),
                     );
@@ -106,7 +112,8 @@ class ProfileScreen extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.pinkAccent,
                     shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30)),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     elevation: 3,
                   ),
@@ -115,15 +122,15 @@ class ProfileScreen extends StatelessWidget {
                     children: [
                       Icon(Icons.favorite, color: Colors.white),
                       SizedBox(width: 8),
-                      Text("Thích ❤️",
+                      Text("Match ❤️",
                           style: TextStyle(fontSize: 16, color: Colors.white)),
                     ],
                   ),
                 ),
               ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

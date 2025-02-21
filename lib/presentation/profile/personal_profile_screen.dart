@@ -41,6 +41,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
       if (mounted) {
         _loadUserProfile();
+        isLoading = false;
       }
     });
   }
@@ -91,9 +92,7 @@ class _PersonalProfileScreenState extends State<PersonalProfileScreen> {
       body: Consumer3<ProfileProvider, PreferencesProvider, AuthProvider>(
           builder: (context, profileProvider, preferencesProvider, authProvider,
               child) {
-        return authProvider.isLoggingOut ||
-                profileProvider.isLoading ||
-                preferencesProvider.isLoading
+        return isLoading
             ? Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
                 child: Padding(
