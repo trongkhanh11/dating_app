@@ -2,7 +2,6 @@ import 'package:dating_app/models/user_model.dart';
 import 'package:dating_app/presentation/messenger/chat_screen.dart';
 import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/conversation_provider.dart';
-import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/themes/theme.dart';
 import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/material.dart';
@@ -144,8 +143,76 @@ class _MessengerScreenState extends State<MessengerScreen> {
                 ],
               ),
             ),
-            Consumer2<ConversationProvider, ProfileProvider>(builder:
-                (context, conversationProvider, profileProvider, child) {
+            const SizedBox(
+              height: 10,
+            ),
+            Consumer<ConversationProvider>(
+              builder: (context, ConversationProvider, child) {
+                final conversations =
+                    ConversationProvider.listConversation?.conversations;
+
+                return conversations == null || conversations.isEmpty
+                    ? const SizedBox()
+                    : SizedBox(
+                        height: 80,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: conversations.length,
+                          itemBuilder: (context, index) {
+                            final conversation = conversations[index];
+
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ChatScreen(
+                                      userId: conversation.user1.id,
+                                      otherUserId: conversation.user2.id,
+                                      otherUserName:
+                                          conversation.user2.displayName,
+                                      otherUserPhotoUrl:
+                                          conversation.user2.image,
+                                    ),
+                                  ),
+                                );
+                              },
+                              child: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                                child: Column(
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 26,
+                                      backgroundImage:
+                                          conversation.user2.image != null
+                                              ? NetworkImage(
+                                                  conversation.user2.image!)
+                                              : null,
+                                      child: conversation.user2.image == null
+                                          ? const Icon(Icons.person, size: 30)
+                                          : null,
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text(
+                                      conversation.user2.displayName,
+                                      style: const TextStyle(fontSize: 12),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+              },
+            ),
+            const SizedBox(
+              height: 10,
+            ),
+            Consumer<ConversationProvider>(
+                builder: (context, conversationProvider, child) {
               final conversations =
                   conversationProvider.listConversation?.conversations ?? [];
               return Expanded(
@@ -204,10 +271,12 @@ class _MessengerScreenState extends State<MessengerScreen> {
                                   return ListTile(
                                     leading: user.image != null
                                         ? CircleAvatar(
+                                            radius: 26,
                                             backgroundImage:
                                                 NetworkImage(user.image!),
                                           )
                                         : CircleAvatar(
+                                            radius: 26,
                                             backgroundColor: Colors.grey[700],
                                             child: const Icon(Icons.person)),
                                     title: Text(
@@ -241,7 +310,6 @@ class _MessengerScreenState extends State<MessengerScreen> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => ChatScreen(
-                                            chatId: conversations[index].id,
                                             userId:
                                                 conversations[index].user1.id,
                                             otherUserId:

@@ -11,7 +11,6 @@ import 'package:provider/provider.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class ChatScreen extends StatefulWidget {
-  final String chatId;
   final String userId;
   final String otherUserId;
   final String otherUserName;
@@ -19,7 +18,6 @@ class ChatScreen extends StatefulWidget {
 
   const ChatScreen({
     super.key,
-    required this.chatId,
     required this.userId,
     required this.otherUserId,
     required this.otherUserName,
@@ -62,7 +60,7 @@ class _ChatScreenState extends State<ChatScreen> {
     socket = IO.io('http://192.168.100.137:3000/', <String, dynamic>{
       'transports': ['websocket'],
       'autoConnect': false,
-      'auth': {'token': token ?? ''},
+      'auth': {'token': token},
     });
 
     socket.connect();
