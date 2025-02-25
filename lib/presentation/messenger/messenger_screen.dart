@@ -2,11 +2,13 @@ import 'package:dating_app/models/user_model.dart';
 import 'package:dating_app/presentation/messenger/chat_screen.dart';
 import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/conversation_provider.dart';
+import 'package:dating_app/providers/match_provider.dart';
 import 'package:dating_app/themes/theme.dart';
 import 'package:fluentui_icons/fluentui_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:socket_io_client/socket_io_client.dart' as IO;
 
 class MessengerScreen extends StatefulWidget {
   const MessengerScreen({super.key});
@@ -16,7 +18,9 @@ class MessengerScreen extends StatefulWidget {
 }
 
 class _MessengerScreenState extends State<MessengerScreen> {
+  late IO.Socket socket;
   bool isSearchMode = false;
+  String userId = "";
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -24,7 +28,12 @@ class _MessengerScreenState extends State<MessengerScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final userId = authProvider.userModel?.user.id ?? "";
+      setState(() {
+        userId = authProvider.userModel?.user.id ?? "";
+      });
+
+      await Provider.of<MatchProvider>(context, listen: false)
+          .getMatchesOfUser(userId, context);
       await Provider.of<ConversationProvider>(context, listen: false)
           .getListConversation(userId, context);
     });
@@ -146,20 +155,19 @@ class _MessengerScreenState extends State<MessengerScreen> {
             const SizedBox(
               height: 10,
             ),
-            Consumer<ConversationProvider>(
-              builder: (context, ConversationProvider, child) {
-                final conversations =
-                    ConversationProvider.listConversation?.conversations;
+            Consumer<MatchProvider>(
+              builder: (context, matchProvider, child) {
+                final listMatchedUser = matchProvider.listMatchedUser?.users;
 
-                return conversations == null || conversations.isEmpty
+                return listMatchedUser == null || listMatchedUser.isEmpty
                     ? const SizedBox()
                     : SizedBox(
                         height: 80,
                         child: ListView.builder(
                           scrollDirection: Axis.horizontal,
-                          itemCount: conversations.length,
+                          itemCount: listMatchedUser.length,
                           itemBuilder: (context, index) {
-                            final conversation = conversations[index];
+                            final matchedUser = listMatchedUser[index];
 
                             return GestureDetector(
                               onTap: () {
@@ -167,35 +175,30 @@ class _MessengerScreenState extends State<MessengerScreen> {
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => ChatScreen(
-                                      userId: conversation.user1.id,
-                                      otherUserId: conversation.user2.id,
-                                      otherUserName:
-                                          conversation.user2.displayName,
-                                      otherUserPhotoUrl:
-                                          conversation.user2.image,
+                                      userId: userId,
+                                      otherUserId: matchedUser.id,
+                                      otherUserName: matchedUser.displayName,
+                                      otherUserPhotoUrl: matchedUser.image,
                                     ),
                                   ),
                                 );
                               },
                               child: Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
+                                padding: const EdgeInsets.only(left: 20),
                                 child: Column(
                                   children: [
                                     CircleAvatar(
                                       radius: 26,
-                                      backgroundImage:
-                                          conversation.user2.image != null
-                                              ? NetworkImage(
-                                                  conversation.user2.image!)
-                                              : null,
-                                      child: conversation.user2.image == null
+                                      backgroundImage: matchedUser.image != null
+                                          ? NetworkImage(matchedUser.image!)
+                                          : null,
+                                      child: matchedUser.image == null
                                           ? const Icon(Icons.person, size: 30)
                                           : null,
                                     ),
                                     const SizedBox(height: 5),
                                     Text(
-                                      conversation.user2.displayName,
+                                      matchedUser.displayName,
                                       style: const TextStyle(fontSize: 12),
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -229,17 +232,11 @@ class _MessengerScreenState extends State<MessengerScreen> {
                             ? ListView.builder(
                                 itemCount: conversations.length,
                                 itemBuilder: (context, index) {
-                                  final authProvider =
-                                      Provider.of<AuthProvider>(context,
-                                          listen: false);
-                                  final userId =
-                                      authProvider.userModel?.user.id ?? "";
-
                                   final UserInChat user;
                                   if (userId == conversations[index].user1.id) {
-                                    user = conversations[index].user1;
-                                  } else {
                                     user = conversations[index].user2;
+                                  } else {
+                                    user = conversations[index].user1;
                                   }
 
                                   return ListTile(
@@ -267,20 +264,28 @@ class _MessengerScreenState extends State<MessengerScreen> {
                             : ListView.builder(
                                 itemCount: conversations.length,
                                 itemBuilder: (context, index) {
-                                  final user = conversations[index].user2;
+                                  final UserInChat user;
+                                  final UserInChat otherUser;
+                                  if (userId == conversations[index].user1.id) {
+                                    user = conversations[index].user1;
+                                    otherUser = conversations[index].user2;
+                                  } else {
+                                    user = conversations[index].user2;
+                                    otherUser = conversations[index].user1;
+                                  }
                                   return ListTile(
-                                    leading: user.image != null
+                                    leading: otherUser.image != null
                                         ? CircleAvatar(
                                             radius: 26,
                                             backgroundImage:
-                                                NetworkImage(user.image!),
+                                                NetworkImage(otherUser.image!),
                                           )
                                         : CircleAvatar(
                                             radius: 26,
                                             backgroundColor: Colors.grey[700],
                                             child: const Icon(Icons.person)),
                                     title: Text(
-                                      user.displayName,
+                                      otherUser.displayName,
                                       style: const TextStyle(
                                           fontWeight: FontWeight.w600),
                                     ),
@@ -288,7 +293,7 @@ class _MessengerScreenState extends State<MessengerScreen> {
                                       conversations[index]
                                                   .lastMessage
                                                   .senderId ==
-                                              conversations[index].user1.id
+                                              user.id
                                           ? "You: ${conversations[index].lastMessage.messageContent}"
                                           : conversations[index]
                                               .lastMessage
@@ -310,12 +315,11 @@ class _MessengerScreenState extends State<MessengerScreen> {
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) => ChatScreen(
-                                            userId:
-                                                conversations[index].user1.id,
-                                            otherUserId:
-                                                conversations[index].user2.id,
-                                            otherUserName: user.displayName,
-                                            otherUserPhotoUrl: user.image,
+                                            userId: user.id,
+                                            otherUserId: otherUser.id,
+                                            otherUserName:
+                                                otherUser.displayName,
+                                            otherUserPhotoUrl: otherUser.image,
                                           ),
                                         ),
                                       );

@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   double maxDistance = 50;
 
   Map<int, int> photoIndexes = {};
-  Map<int, List<String>> interests = {};
+  Map<int, List> interests = {};
 
   @override
   void initState() {
@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Provider.of<PreferencesProvider>(context, listen: false);
     if (user.id.isNotEmpty && !interests.containsKey(index)) {
       await preferencesProvider.getUserPreferences(user.user.id, context);
-      List<String> hobbies = preferencesProvider.preferences?.hobbies ?? [];
+      List hobbies = preferencesProvider.preferences?.hobbies ?? [];
       if (mounted) {
         setState(() {
           interests[index] = hobbies;
@@ -233,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   SizedBox(
                                     height: MediaQuery.of(context).size.height -
-                                        180,
+                                        170,
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.vertical(
                                         top: Radius.circular(16),
@@ -358,7 +358,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildUserInfo(Profile user, List<String>? interest) {
+  Widget _buildUserInfo(Profile user, List? interest) {
     return Align(
       alignment: Alignment.bottomLeft,
       child: Container(
@@ -463,7 +463,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildInterests(List<String>? interests) {
+  Widget _buildInterests(List? interests) {
     return interests != null
         ? Column(
             crossAxisAlignment: CrossAxisAlignment.start,

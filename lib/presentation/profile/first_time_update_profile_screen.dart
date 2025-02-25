@@ -66,15 +66,9 @@ class _FirstTimeUpdateProfileScreenState
   ];
 
   List<Map<String, String>> orientationOptions = [
-    {"label": "Straight", "value": "straight"},
-    {"label": "Gay", "value": "gay"},
-    {"label": "Lesbian", "value": "lesbian"},
-    {"label": "Bisexual", "value": "bisexual"},
-    {"label": "Pansexual", "value": "pansexual"},
-    {"label": "Asexual", "value": "asexual"},
-    {"label": "Queer", "value": "queer"},
-    {"label": "Questioning", "value": "questioning"},
-    {"label": "Other", "value": "other"},
+    {"label": "Male", "value": "male"},
+    {"label": "Female", "value": "female"},
+    {"label": "Non-binary", "value": "non_binary"},
   ];
 
   List<Map<String, String>> relationshipPreferences = [

@@ -57,9 +57,9 @@ class Profile {
       gender: json['gender'],
       bio: json['bio'],
       location: json['location'],
-      files: (json['files'] as List<dynamic>?)
-          ?.map((item) => item as String)
-          .toList(),
+      files: json['files'] is List<dynamic>
+          ? List<String>.from(json['files'])
+          : [],
       createdAt: json['createdAt'],
       updatedAt: json['updatedAt'],
       isPublic: json['isPublic'],
@@ -199,7 +199,7 @@ class Preferences {
   /// Chuyển đổi từ object Preferences sang JSON
   Map<String, dynamic> toJson() {
     return {
-      'userId':userId,
+      'userId': userId,
       'hobbies': hobbies,
       'lookingFor': lookingFor,
       'languages': languages ?? [],

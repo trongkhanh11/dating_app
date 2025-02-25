@@ -16,14 +16,14 @@ class CityDropdownField extends StatefulWidget {
 
 class _CityDropdownFieldState extends State<CityDropdownField> {
   List<String> cities = [
-     "Hanoi",
+    "Hanoi",
     "Ho Chi Minh City",
     "Da Nang",
     "Hai Phong",
     "Nha Trang",
     "Can Tho",
     "Hue",
-    "Vung Tau"
+    "Vung Tau",
   ];
 
   String? selectedCity;
@@ -33,7 +33,11 @@ class _CityDropdownFieldState extends State<CityDropdownField> {
     super.didUpdateWidget(oldWidget);
     if (widget.initialCity != oldWidget.initialCity) {
       setState(() {
-        selectedCity = widget.initialCity;
+        if (cities.contains(widget.initialCity)) {
+          selectedCity = widget.initialCity;
+        } else {
+          selectedCity = cities.first;
+        }
       });
     }
   }
@@ -44,8 +48,7 @@ class _CityDropdownFieldState extends State<CityDropdownField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DropdownButtonFormField<String>(
-          value: selectedCity ??
-              widget.initialCity, // Đảm bảo luôn lấy giá trị mới nhất
+          value: selectedCity ?? cities.first,
           hint: Text("Select a city"),
           items: cities.map((city) {
             return DropdownMenuItem(

@@ -3,6 +3,7 @@ import 'package:dating_app/models/profile_model.dart';
 import 'package:dating_app/presentation/loveScreen/love_card.dart';
 import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/interaction_provider.dart';
+import 'package:dating_app/providers/match_provider.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -82,6 +83,9 @@ class _LoveScreenState extends State<LoveScreen> {
         type: "LIKE",
       );
       await interactionProvider.interact(interaction, context);
+      final matchProvider = Provider.of<MatchProvider>(context, listen: false);
+      await matchProvider.match(
+          interaction.senderId, interaction.receiverId, context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -89,7 +93,9 @@ class _LoveScreenState extends State<LoveScreen> {
           duration: Duration(seconds: 2),
         ),
       );
-      removeUser(index);
+      setState(() {
+        listUserProfiles.removeAt(index);
+      });
     } catch (e) {
       print("❌ Lỗi khi gửi 'LIKE': $e");
     }
@@ -132,7 +138,7 @@ class _LoveScreenState extends State<LoveScreen> {
                             Icon(Icons.sentiment_dissatisfied,
                                 size: 80, color: Colors.white),
                             SizedBox(height: 10),
-                            Text("Không có ai trong danh sách 😢",
+                            Text("List is empty 😢",
                                 style: TextStyle(
                                     color: Colors.white, fontSize: 20)),
                           ],
@@ -169,7 +175,8 @@ class _LoveScreenState extends State<LoveScreen> {
                             onDismissed: (direction) {
                               if (direction == DismissDirection.startToEnd) {
                                 acceptUser(index);
-                              } else {
+                              } else if (direction ==
+                                  DismissDirection.endToStart) {
                                 removeUser(index);
                               }
                             },

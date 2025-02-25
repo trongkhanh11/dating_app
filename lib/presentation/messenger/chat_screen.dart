@@ -70,9 +70,11 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     socket.on('new_message', (data) {
-      print('New message: $data');
-      Provider.of<ConversationProvider>(context, listen: false)
-          .getMessages(widget.userId, widget.otherUserId, context);
+      if (mounted) {
+        Provider.of<ConversationProvider>(context, listen: false)
+            .getMessages(widget.userId, widget.otherUserId, context);
+      }
+
       scrollToBottom();
     });
 

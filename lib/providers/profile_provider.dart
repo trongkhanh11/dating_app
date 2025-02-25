@@ -144,9 +144,8 @@ class ProfileProvider with ChangeNotifier {
           formData: formData, token: token);
 
       if (response.statusCode == 200) {
-        //List<String> imageIds = List<String>.from(response.data);
-        print("Ảnh đã tải lên thành công!");
-        debugPrint('API call Success: ${response.statusMessage}');
+        print("haha");
+        await getUserProfile(userId, context, myProfile: true);
       } else {
         errorMessage = "Lỗi tải ảnh lên server!";
         debugPrint('API call failed: ${response.statusMessage}');

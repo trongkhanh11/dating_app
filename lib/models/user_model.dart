@@ -120,6 +120,21 @@ class RegisterModel {
   }
 }
 
+class ListUserInChat {
+  List<UserInChat>? users;
+
+  ListUserInChat({this.users});
+
+  factory ListUserInChat.fromJson(Map<String, dynamic> json) {
+    return ListUserInChat(
+      users: json["data"] != null
+          ? List<UserInChat>.from(
+              json["data"].map((x) => UserInChat.fromJson(x)))
+          : [],
+    );
+  }
+}
+
 class UserInChat {
   final String id;
   final int age;

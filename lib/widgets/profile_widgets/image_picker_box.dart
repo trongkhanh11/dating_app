@@ -22,11 +22,8 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
   @override
   void initState() {
     super.initState();
-
-    // Khởi tạo danh sách ảnh rỗng (tối đa 6 ảnh)
     _images = List.generate(6, (index) => null);
 
-    // Nếu có ảnh từ server, cập nhật danh sách ảnh
     if (widget.imageUrls != null) {
       for (int i = 0; i < widget.imageUrls!.length && i < 6; i++) {
         _images[i] = widget.imageUrls![i]; // Lưu URL trực tiếp
@@ -34,7 +31,6 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
     }
   }
 
-  /// Chọn ảnh từ Camera/Gallery và cập nhật danh sách ảnh
   Future<void> _pickImage(int index, ImageSource source) async {
     try {
       final pickedFile = await _picker.pickImage(source: source);
@@ -42,15 +38,16 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
       if (pickedFile != null) {
         if (!mounted) return;
         setState(() {
-          _images[index] = File(pickedFile.path); // Cập nhật ảnh mới vào danh sách
+          _images[index] = File(pickedFile.path);
         });
 
-        final authProvider = context.read<AuthProvider>();
-        final profileProvider = context.read<ProfileProvider>();
+        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+        final profileProvider =
+            Provider.of<ProfileProvider>(context, listen: false);
         final userId = authProvider.userModel?.user.id ?? "";
 
-        // Chỉ upload ảnh mới thay vì toàn bộ danh sách
-        await profileProvider.uploadPhotos(userId, [_images[index] as File], context);
+        await profileProvider.uploadPhotos(
+            userId, [_images[index] as File], context);
       }
     } catch (e) {
       debugPrint("❌ Lỗi khi chọn ảnh: $e");
@@ -74,7 +71,8 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text("Thêm ảnh", style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+            Text("Thêm ảnh",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
             SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {
@@ -96,7 +94,8 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
             Spacer(),
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text("Hủy", style: TextStyle(color: Colors.red, fontSize: 18)),
+              child: Text("Hủy",
+                  style: TextStyle(color: Colors.red, fontSize: 18)),
             ),
           ],
         ),
@@ -135,7 +134,8 @@ class _MultiImagePickerState extends State<MultiImagePicker> {
                   : null,
             ),
             child: _images[index] == null &&
-                    (widget.imageUrls == null || index >= widget.imageUrls!.length)
+                    (widget.imageUrls == null ||
+                        index >= widget.imageUrls!.length)
                 ? DottedBorder(
                     color: Colors.grey,
                     strokeWidth: 1.5,

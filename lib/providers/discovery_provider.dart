@@ -30,6 +30,7 @@ class DiscoveryProvider with ChangeNotifier {
           //'distanceRange': distanceRange,
         },
       );
+
       if (response.statusCode == 200) {
         listProfile = ListProfile.fromJson(response.data);
         notifyListeners();
